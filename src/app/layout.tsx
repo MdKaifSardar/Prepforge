@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Navbar } from "@/components/shared/Navbar";
+import { AppLayout } from "@/components/shared/AppLayout";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -28,10 +28,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body className="min-h-screen bg-zinc-50 font-sans text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          <Navbar />
-          <div className="pt-16 min-h-[calc(100vh-4rem)]">
+          <AppLayout>
             {children}
-          </div>
+          </AppLayout>
         </ThemeProvider>
       </body>
     </html>
