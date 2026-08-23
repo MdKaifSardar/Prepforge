@@ -15,7 +15,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "InterviewPrep | DSA Pattern Recognition Bible & Placement Prep",
+  title: "Prepforge | Multi-Domain Technical Interview Engine",
   description: "Master 19 core algorithmic patterns, uniform sub-patterns, and C++ solutions for rapid SDE interview preparation.",
 };
 

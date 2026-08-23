@@ -1,6 +1,6 @@
 <div align="center">
 
-# ⚡ Tech Interview Engine
+# ⚡ Prepforge
 
 **The Enterprise Multi-Domain Technical Interview Preparation Platform**
 
@@ -18,7 +18,7 @@
 
 ## 📌 Overview
 
-**Tech Interview Engine** is a high-performance, modular web application built for software engineering candidates and interview prep platforms. Unlike static problem lists, it uses a **Pattern-First & Blueprint Methodology** to train candidates in instant algorithmic pattern recognition rather than rote memorization.
+**Prepforge** is a high-performance, modular web application built for software engineering candidates and interview prep platforms. Unlike static problem lists, it uses a **Pattern-First & Blueprint Methodology** to train candidates in instant algorithmic pattern recognition rather than rote memorization.
 
 Architected with **Domain-Driven Design (DDD)**, the platform is decoupled into self-contained feature modules (**DSA**, **SQL**, **DBMS**, **System Design**) and integrated with a normalized **Firebase Firestore** backend.
 
@@ -60,7 +60,7 @@ Architected with **Domain-Driven Design (DDD)**, the platform is decoupled into 
 The project follows **Domain-Driven Design (DDD)**. Shared abstractions live in `src/core/`, while feature modules live inside isolated boundaries in `src/features/`.
 
 ```text
-interviewprep/
+prepforge/
 ├── scripts/
 │   └── run_seed.ts                     # Normalized Firestore database seeder
 ├── src/
@@ -106,8 +106,8 @@ interviewprep/
 
 ### 1. Clone & Install Dependencies
 ```bash
-git clone https://github.com/your-username/interviewprep.git
-cd interviewprep
+git clone git@github.com:MdKaifSardar/Prepforge.git
+cd Prepforge
 npm install
 ```
 
