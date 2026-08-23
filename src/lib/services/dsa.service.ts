@@ -1,23 +1,44 @@
+import { cache } from 'react';
 import { Pattern, SubPattern, Question, UserProgress } from '../models/dsa.types';
 import { PATTERNS_DATA } from '../data/dsa-patterns';
 import { db } from '../firebase';
-import { collection, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+
+// In-memory singleton cache across requests
+let cachedPatterns: Pattern[] | null = null;
+
+async function _fetchPatternsFromSource(): Promise<Pattern[]> {
+  // If in development mode, skip in-memory singleton cache to ensure F5 yields fresh data
+  if (process.env.NODE_ENV !== 'development' && cachedPatterns) {
+    return cachedPatterns;
+  }
+
+  try {
+    const patternsCol = collection(db, 'patterns');
+    const snapshot = await getDocs(patternsCol);
+    if (!snapshot.empty) {
+      const docsData = snapshot.docs.map(doc => ({ id: Number(doc.id), ...doc.data() } as Pattern));
+      docsData.sort((a, b) => a.id - b.id);
+      cachedPatterns = docsData;
+      return docsData;
+    }
+  } catch (error) {
+    console.warn('Firestore fetch fallback to PATTERNS_DATA:', error);
+  }
+
+  cachedPatterns = PATTERNS_DATA;
+  return PATTERNS_DATA;
+}
+
+// React cache() memoizes calls during a single request render pass
+export const fetchPatternsCached = cache(_fetchPatternsFromSource);
 
 export class DsaService {
   /**
    * Fetch all patterns (Reads from Firestore if available, falls back to pre-bundled dataset)
    */
   static async getPatterns(): Promise<Pattern[]> {
-    try {
-      const patternsCol = collection(db, 'patterns');
-      const snapshot = await getDocs(patternsCol);
-      if (!snapshot.empty) {
-        return snapshot.docs.map(doc => ({ id: Number(doc.id), ...doc.data() } as Pattern));
-      }
-    } catch (error) {
-      console.warn('Firestore fetch fallback to PATTERNS_DATA:', error);
-    }
-    return PATTERNS_DATA;
+    return await fetchPatternsCached();
   }
 
   /**
@@ -80,16 +101,19 @@ export class DsaService {
   // --------------------------------------------------------------------------
 
   static async createPattern(pattern: Pattern): Promise<void> {
+    cachedPatterns = null; // Invalidate cache
     const docRef = doc(db, 'patterns', String(pattern.id));
     await setDoc(docRef, pattern);
   }
 
   static async updatePattern(patternId: number | string, updates: Partial<Pattern>): Promise<void> {
+    cachedPatterns = null; // Invalidate cache
     const docRef = doc(db, 'patterns', String(patternId));
     await updateDoc(docRef, updates);
   }
 
   static async deletePattern(patternId: number | string): Promise<void> {
+    cachedPatterns = null; // Invalidate cache
     const docRef = doc(db, 'patterns', String(patternId));
     await deleteDoc(docRef);
   }
