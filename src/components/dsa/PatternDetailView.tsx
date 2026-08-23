@@ -30,7 +30,7 @@ export function PatternDetailView({ pattern }: PatternDetailViewProps) {
   });
 
   return (
-    <main className="mx-auto max-w-7xl px-6 py-8">
+    <main className="mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-8">
       {/* Breadcrumbs */}
       <Breadcrumbs
         backHref="/"
@@ -43,12 +43,12 @@ export function PatternDetailView({ pattern }: PatternDetailViewProps) {
 
       {/* Pattern Main Header Card */}
       <div className="mb-8 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60">
-        <div className="border-b border-zinc-100 p-6 dark:border-zinc-800/80">
+        <div className="border-b border-zinc-100 p-4 sm:p-6 dark:border-zinc-800/80">
           <div className="mb-3 flex items-center gap-3">
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600 font-mono text-xs font-bold text-white shadow-sm">
               #{numStr}
             </span>
-            <h1 className="text-xl font-extrabold tracking-tight text-zinc-900 dark:text-white sm:text-2xl">
+            <h1 className="text-lg font-extrabold tracking-tight text-zinc-900 dark:text-white sm:text-2xl">
               {pattern.name}
             </h1>
           </div>
@@ -73,7 +73,7 @@ export function PatternDetailView({ pattern }: PatternDetailViewProps) {
         </div>
 
         {/* Pattern Details Body */}
-        <div className="p-6 space-y-6">
+        <div className="p-4 sm:p-6 space-y-6">
           {/* When to Think About */}
           <div>
             <div className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
@@ -139,12 +139,12 @@ export function PatternDetailView({ pattern }: PatternDetailViewProps) {
 
       {/* Quick Access — All Questions Section */}
       <div>
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
-            <HelpCircle className="h-4 w-4 text-indigo-500" />
+            <HelpCircle className="h-4 w-4 text-indigo-500 shrink-0" />
             <span>Quick Access — All Pattern Questions</span>
           </div>
-          <span className="rounded-full border border-zinc-200 bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+          <span className="self-start sm:self-auto rounded-full border border-zinc-200 bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
             {filteredQuestions.length} Questions
           </span>
         </div>

@@ -9,31 +9,35 @@ import { Pattern } from '@/lib/models/dsa.types';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [patterns, setPatterns] = useState<Pattern[]>([]);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const pathname = usePathname();
 
   useEffect(() => {
     DsaService.getPatterns().then(setPatterns);
   }, []);
 
-  // Close mobile sidebar on route transitions
+  // Only close mobile drawer on route transitions (keep open on desktop)
   useEffect(() => {
-    setIsSidebarOpen(false);
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setIsSidebarOpen(false);
+    }
   }, [pathname]);
 
   return (
     <>
-      <Navbar
-        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-        isSidebarOpen={isSidebarOpen}
-      />
+      <Navbar />
       <div className="pt-16 min-h-[calc(100vh-4rem)] flex">
         <Sidebar
           patterns={patterns}
           isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
           onClose={() => setIsSidebarOpen(false)}
         />
-        <div className="flex-1 w-full lg:pl-72 transition-all">
+        <div
+          className={`flex-1 w-full transition-all duration-300 ease-in-out ${
+            isSidebarOpen ? 'lg:pl-72' : 'lg:pl-0'
+          }`}
+        >
           {children}
         </div>
       </div>

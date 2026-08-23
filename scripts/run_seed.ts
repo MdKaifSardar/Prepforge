@@ -29,14 +29,59 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+function createSlug(title: string): string {
+  return title.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+}
+
 async function seed() {
-  console.log(`Starting Firestore seeding into project: ${firebaseConfig.projectId}...`);
+  console.log(`Starting Normalized Firestore seeding into project: ${firebaseConfig.projectId}...`);
+  
+  let totalPatterns = 0;
+  let totalSubPatterns = 0;
+  let totalQuestions = 0;
+
   for (const pattern of PATTERNS_DATA) {
-    const docRef = doc(db, 'patterns', String(pattern.id));
-    await setDoc(docRef, pattern);
-    console.log(`Uploaded Pattern #${pattern.id}: ${pattern.name}`);
+    const questionCount = pattern.questions ? pattern.questions.length : 0;
+    
+    // 1. Upload Sub-patterns
+    if (pattern.subPatterns && pattern.subPatterns.length > 0) {
+      for (const sub of pattern.subPatterns) {
+        const subDocRef = doc(db, 'sub_patterns', sub.id);
+        await setDoc(subDocRef, {
+          ...sub,
+          patternId: pattern.id
+        });
+        totalSubPatterns++;
+      }
+    }
+
+    // 2. Upload Questions
+    if (pattern.questions && pattern.questions.length > 0) {
+      for (const q of pattern.questions) {
+        const slug = createSlug(q.title);
+        const qDocRef = doc(db, 'questions', slug);
+        await setDoc(qDocRef, {
+          ...q,
+          slug,
+          patternId: pattern.id
+        });
+        totalQuestions++;
+      }
+    }
+
+    // 3. Upload Pattern (Lightweight document without giant embedded questions array)
+    const { questions, ...patternMeta } = pattern;
+    const patternDocRef = doc(db, 'patterns', String(pattern.id));
+    await setDoc(patternDocRef, {
+      ...patternMeta,
+      questionCount
+    });
+    totalPatterns++;
+
+    console.log(`Uploaded Pattern #${pattern.id}: ${pattern.name} (${pattern.subPatterns?.length || 0} sub-patterns, ${questionCount} questions)`);
   }
-  console.log('SUCCESS: All patterns seeded into Firebase Firestore database!');
+
+  console.log(`SUCCESS: Seeded ${totalPatterns} patterns, ${totalSubPatterns} sub-patterns, and ${totalQuestions} questions into Firestore!`);
   process.exit(0);
 }
 

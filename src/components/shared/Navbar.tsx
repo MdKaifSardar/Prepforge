@@ -4,22 +4,18 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { Code2, Search, Sun, Moon, Zap, Layers, BookOpen, Database, Menu, X } from 'lucide-react';
+import { Code2, Search, Sun, Moon, Zap, Layers, BookOpen, Database } from 'lucide-react';
 
 interface NavbarProps {
   onSearch?: (query: string) => void;
   onToggleRevisionMode?: () => void;
   isRevisionMode?: boolean;
-  onToggleSidebar?: () => void;
-  isSidebarOpen?: boolean;
 }
 
 export function Navbar({
   onSearch,
   onToggleRevisionMode,
   isRevisionMode = false,
-  onToggleSidebar,
-  isSidebarOpen = false,
 }: NavbarProps) {
   const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -39,19 +35,8 @@ export function Navbar({
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-16 border-b border-zinc-200 bg-white/80 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/80">
       <div className="mx-auto flex h-full items-center justify-between px-4 sm:px-6">
-        {/* Brand & Menu Toggle Group */}
+        {/* Brand Group */}
         <div className="flex items-center gap-3 sm:gap-6">
-          {/* Mobile Sidebar Toggle Button */}
-          {onToggleSidebar && (
-            <button
-              onClick={onToggleSidebar}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 text-zinc-700 hover:bg-zinc-100 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900"
-              aria-label="Toggle Sidebar Navigation"
-            >
-              {isSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
-          )}
-
           <Link href="/" className="flex items-center gap-2.5 text-zinc-900 transition-opacity hover:opacity-90 dark:text-white">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-600/20 dark:bg-indigo-500">
               <Code2 className="h-5 w-5" />
@@ -135,7 +120,7 @@ export function Navbar({
           {mounted && (
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 text-zinc-700 hover:bg-zinc-100 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900"
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 text-zinc-700 hover:bg-zinc-100 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900 transition-colors"
               aria-label="Toggle Theme"
             >
               {theme === 'dark' ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-indigo-600" />}
