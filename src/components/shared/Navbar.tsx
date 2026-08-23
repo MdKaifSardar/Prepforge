@@ -42,7 +42,7 @@ export function Navbar({
               <Code2 className="h-5 w-5" />
             </div>
             <div>
-              <span className="font-bold text-sm sm:text-base tracking-tight">InterviewPrep</span>
+              <span className="font-bold text-sm sm:text-base tracking-tight">Prepforge</span>
               <span className="ml-2 hidden rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-600 sm:inline-block dark:border-indigo-900/50 dark:bg-indigo-950/50 dark:text-indigo-400">
                 SDE Sheet
               </span>
