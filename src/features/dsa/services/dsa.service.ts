@@ -5,10 +5,6 @@ import { PATTERNS_DATA } from '@/lib/data/dsa-patterns';
 import { db } from '@/core/firebase/firebase';
 import { collection, getDocs, doc, getDoc, query, where, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 
-function createSlug(title: string): string {
-  return title.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
-}
-
 // In-memory singleton cache across requests
 let cachedPatterns: Pattern[] | null = null;
 
@@ -21,8 +17,8 @@ async function _fetchPatternsFromSource(): Promise<Pattern[]> {
     const patternsCol = collection(db, 'patterns');
     const snapshot = await getDocs(patternsCol);
     if (!snapshot.empty) {
-      const patternsData = snapshot.docs.map(d => ({ id: Number(d.id), ...d.data() } as Pattern));
-      patternsData.sort((a, b) => a.id - b.id);
+      const patternsData = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Pattern));
+      patternsData.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
 
       const questionsCol = collection(db, 'questions');
       const qSnapshot = await getDocs(questionsCol);
@@ -34,7 +30,7 @@ async function _fetchPatternsFromSource(): Promise<Pattern[]> {
       }
 
       for (const pattern of patternsData) {
-        pattern.questions = allQuestions.filter(q => q.patternId === pattern.id);
+        pattern.questions = allQuestions.filter(q => q.patternSlug === pattern.slug || String(q.patternId) === String(pattern.id));
       }
 
       cachedPatterns = patternsData;
@@ -52,22 +48,63 @@ export const fetchPatternsCached = cache(_fetchPatternsFromSource);
 
 export class DsaService {
   /**
-   * Fetch all patterns (Reads from normalized Firestore collections if available)
+   * Fetch all patterns sorted by displayOrder
    */
   static async getPatterns(): Promise<Pattern[]> {
     return await fetchPatternsCached();
   }
 
   /**
-   * Fetch single pattern by ID
+   * Fetch single pattern by SEO Slug (or fallback ID)
    */
-  static async getPatternById(patternId: number | string): Promise<Pattern | null> {
-    const targetId = Number(patternId);
+  static async getPatternBySlug(patternSlug: string): Promise<Pattern | null> {
+    const cleanSlug = patternSlug.toLowerCase().trim();
 
     try {
-      const patternDoc = await getDoc(doc(db, 'patterns', String(targetId)));
+      const pCol = collection(db, 'patterns');
+      const q = query(pCol, where('slug', '==', cleanSlug));
+      const snap = await getDocs(q);
+
+      if (!snap.empty) {
+        const patternDoc = snap.docs[0];
+        const pattern = { id: patternDoc.id, ...patternDoc.data() } as Pattern;
+
+        const subCol = collection(db, 'sub_patterns');
+        const subQuery = query(subCol, where('patternSlug', '==', cleanSlug));
+        const subSnap = await getDocs(subQuery);
+        if (!subSnap.empty) {
+          pattern.subPatterns = subSnap.docs.map(d => d.data() as SubPattern);
+        }
+
+        const qCol = collection(db, 'questions');
+        const qQuery = query(qCol, where('patternSlug', '==', cleanSlug));
+        const qSnap = await getDocs(qQuery);
+        if (!qSnap.empty) {
+          pattern.questions = qSnap.docs.map(d => d.data() as Question);
+        } else {
+          pattern.questions = [];
+        }
+
+        return pattern;
+      }
+    } catch (err) {
+      console.warn(`Firestore getPatternBySlug fallback for slug ${cleanSlug}:`, err);
+    }
+
+    const patterns = await this.getPatterns();
+    return patterns.find(p => p.slug === cleanSlug || String(p.id) === cleanSlug) || null;
+  }
+
+  /**
+   * Fetch single pattern by immutable ID
+   */
+  static async getPatternById(patternId: string | number): Promise<Pattern | null> {
+    const targetId = String(patternId);
+
+    try {
+      const patternDoc = await getDoc(doc(db, 'patterns', targetId));
       if (patternDoc.exists()) {
-        const pattern = { id: targetId, ...patternDoc.data() } as Pattern;
+        const pattern = { id: patternDoc.id, ...patternDoc.data() } as Pattern;
 
         const subCol = collection(db, 'sub_patterns');
         const subQuery = query(subCol, where('patternId', '==', targetId));
@@ -88,66 +125,46 @@ export class DsaService {
         return pattern;
       }
     } catch (err) {
-      console.warn(`Firestore getPatternById fallback for patternId ${patternId}:`, err);
+      console.warn(`Firestore getPatternById fallback for patternId ${targetId}:`, err);
     }
 
     const patterns = await this.getPatterns();
-    return patterns.find(p => p.id === targetId) || null;
+    return patterns.find(p => String(p.id) === targetId) || null;
   }
 
   /**
-   * Fetch dedicated sub-pattern by patternId & subId
+   * Fetch dedicated sub-pattern by patternSlug & subPatternSlug
    */
-  static async getSubPattern(patternId: number | string, subId: string): Promise<{ pattern: Pattern; subPattern: SubPattern; questions: Question[] } | null> {
-    const targetId = Number(patternId);
+  static async getSubPatternBySlug(patternSlug: string, subPatternSlug: string): Promise<{ pattern: Pattern; subPattern: SubPattern; questions: Question[] } | null> {
+    const pattern = await this.getPatternBySlug(patternSlug);
+    if (!pattern) return null;
 
-    try {
-      const subDoc = await getDoc(doc(db, 'sub_patterns', subId));
-      const pattern = await this.getPatternById(targetId);
-
-      if (subDoc.exists() && pattern) {
-        const subPattern = { id: subId, ...subDoc.data() } as SubPattern;
-
-        const qCol = collection(db, 'questions');
-        const qQuery = query(qCol, where('subPatternId', '==', subId));
-        const qSnap = await getDocs(qQuery);
-        const questions = qSnap.docs.map(d => d.data() as Question);
-
-        return { pattern, subPattern, questions };
-      }
-    } catch (err) {
-      console.warn(`Firestore getSubPattern fallback for subId ${subId}:`, err);
-    }
-
-    const pattern = await this.getPatternById(patternId);
-    if (!pattern || !pattern.subPatterns) return null;
-
-    const subPattern = pattern.subPatterns.find(sp => sp.id === subId);
+    const subPattern = (pattern.subPatterns || []).find(sp => sp.slug === subPatternSlug || sp.id === subPatternSlug);
     if (!subPattern) return null;
 
-    const questions = pattern.questions.filter(q => q.subPatternId === subId);
+    const questions = (pattern.questions || []).filter(q => q.subPatternSlug === subPatternSlug || q.subPatternId === subPattern.id);
     return { pattern, subPattern, questions };
   }
 
   /**
-   * Fetch question by URL slug (e.g. "koko-eating-bananas" or "two-sum")
+   * Fetch question by Composite SEO Slugs (patternSlug + questionSlug)
    */
-  static async getQuestionBySlug(slug: string): Promise<{ question: Question; pattern: Pattern; index: number; total: number; prevQ?: Question; nextQ?: Question } | null> {
-    const cleanSlug = slug.toLowerCase().trim();
+  static async getQuestionByCompositeSlug(patternSlug: string, questionSlug: string): Promise<{ question: Question; pattern: Pattern; index: number; total: number; prevQ?: Question; nextQ?: Question } | null> {
+    const cleanPatternSlug = patternSlug.toLowerCase().trim();
+    const cleanQuestionSlug = questionSlug.toLowerCase().trim();
 
     try {
-      const qDoc = await getDoc(doc(db, 'questions', cleanSlug));
-      if (qDoc.exists()) {
-        const question = qDoc.data() as Question;
-        const pattern = await this.getPatternById(question.patternId || 1);
+      const qCol = collection(db, 'questions');
+      const qQuery = query(qCol, where('patternSlug', '==', cleanPatternSlug), where('slug', '==', cleanQuestionSlug));
+      const qSnap = await getDocs(qQuery);
+
+      if (!qSnap.empty) {
+        const questionDoc = qSnap.docs[0];
+        const question = { id: questionDoc.id, ...questionDoc.data() } as Question;
+        const pattern = await this.getPatternBySlug(cleanPatternSlug);
 
         if (pattern) {
-          const idx = pattern.questions.findIndex(q => {
-            const qSlug = (q.id || createSlug(q.title)).toLowerCase();
-            const qLc = q.lcNum.toLowerCase().replace(/\s+/g, '');
-            return qSlug === cleanSlug || qLc === cleanSlug;
-          });
-
+          const idx = pattern.questions.findIndex(q => q.slug === cleanQuestionSlug || q.id === question.id);
           const index = idx !== -1 ? idx + 1 : 1;
           const prevQ = idx > 0 ? pattern.questions[idx - 1] : undefined;
           const nextQ = idx < pattern.questions.length - 1 ? pattern.questions[idx + 1] : undefined;
@@ -163,31 +180,47 @@ export class DsaService {
         }
       }
     } catch (err) {
-      console.warn(`Firestore getQuestionBySlug fallback for slug ${cleanSlug}:`, err);
+      console.warn(`Firestore getQuestionByCompositeSlug fallback for ${cleanPatternSlug}/${cleanQuestionSlug}:`, err);
+    }
+
+    // Fallback lookup
+    const pattern = await this.getPatternBySlug(cleanPatternSlug);
+    if (!pattern) return null;
+
+    const idx = pattern.questions.findIndex(q => q.slug === cleanQuestionSlug || String(q.id) === cleanQuestionSlug);
+    if (idx === -1) return null;
+
+    const question = pattern.questions[idx];
+    const prevQ = idx > 0 ? pattern.questions[idx - 1] : undefined;
+    const nextQ = idx < pattern.questions.length - 1 ? pattern.questions[idx + 1] : undefined;
+
+    return {
+      question,
+      pattern,
+      index: idx + 1,
+      total: pattern.questions.length,
+      prevQ,
+      nextQ
+    };
+  }
+
+  /**
+   * Fetch question by Immutable Primary ID (for User Bookmarks / Progress)
+   */
+  static async getQuestionById(questionId: string): Promise<Question | null> {
+    try {
+      const qDoc = await getDoc(doc(db, 'questions', questionId));
+      if (qDoc.exists()) {
+        return { id: qDoc.id, ...qDoc.data() } as Question;
+      }
+    } catch (err) {
+      console.warn(`Firestore getQuestionById fallback for ${questionId}:`, err);
     }
 
     const patterns = await this.getPatterns();
     for (const pattern of patterns) {
-      const idx = pattern.questions.findIndex(q => {
-        const qSlug = (q.id || createSlug(q.title)).toLowerCase();
-        const qLc = q.lcNum.toLowerCase().replace(/\s+/g, '');
-        return qSlug === cleanSlug || qLc === cleanSlug;
-      });
-
-      if (idx !== -1) {
-        const question = pattern.questions[idx];
-        const prevQ = idx > 0 ? pattern.questions[idx - 1] : undefined;
-        const nextQ = idx < pattern.questions.length - 1 ? pattern.questions[idx + 1] : undefined;
-
-        return {
-          question,
-          pattern,
-          index: idx + 1,
-          total: pattern.questions.length,
-          prevQ,
-          nextQ
-        };
-      }
+      const found = pattern.questions.find(q => String(q.id) === questionId);
+      if (found) return found;
     }
     return null;
   }
@@ -202,13 +235,13 @@ export class DsaService {
     await setDoc(docRef, pattern);
   }
 
-  static async updatePattern(patternId: number | string, updates: Partial<Pattern>): Promise<void> {
+  static async updatePattern(patternId: string | number, updates: Partial<Pattern>): Promise<void> {
     cachedPatterns = null;
     const docRef = doc(db, 'patterns', String(patternId));
     await updateDoc(docRef, updates);
   }
 
-  static async deletePattern(patternId: number | string): Promise<void> {
+  static async deletePattern(patternId: string | number): Promise<void> {
     cachedPatterns = null;
     const docRef = doc(db, 'patterns', String(patternId));
     await deleteDoc(docRef);

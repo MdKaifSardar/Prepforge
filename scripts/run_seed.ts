@@ -29,10 +29,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-function createSlug(title: string): string {
-  return title.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
-}
-
 async function seed() {
   console.log(`Starting Normalized Firestore seeding into project: ${firebaseConfig.projectId}...`);
   
@@ -42,14 +38,17 @@ async function seed() {
 
   for (const pattern of PATTERNS_DATA) {
     const questionCount = pattern.questions ? pattern.questions.length : 0;
+    const patternDocId = String(pattern.id);
     
     // 1. Upload Sub-patterns
     if (pattern.subPatterns && pattern.subPatterns.length > 0) {
       for (const sub of pattern.subPatterns) {
-        const subDocRef = doc(db, 'sub_patterns', sub.id);
+        const subDocRef = doc(db, 'sub_patterns', String(sub.id));
         await setDoc(subDocRef, {
           ...sub,
-          patternId: pattern.id
+          patternId: patternDocId,
+          patternSlug: pattern.slug,
+          domainId: 'dsa'
         });
         totalSubPatterns++;
       }
@@ -58,12 +57,14 @@ async function seed() {
     // 2. Upload Questions
     if (pattern.questions && pattern.questions.length > 0) {
       for (const q of pattern.questions) {
-        const slug = createSlug(q.title);
-        const qDocRef = doc(db, 'questions', slug);
+        const qDocId = String(q.id);
+        const qDocRef = doc(db, 'questions', qDocId);
         await setDoc(qDocRef, {
           ...q,
-          slug,
-          patternId: pattern.id
+          id: qDocId,
+          patternId: patternDocId,
+          patternSlug: pattern.slug,
+          domainId: 'dsa'
         });
         totalQuestions++;
       }
@@ -71,14 +72,16 @@ async function seed() {
 
     // 3. Upload Pattern (Lightweight document without giant embedded questions array)
     const { questions, ...patternMeta } = pattern;
-    const patternDocRef = doc(db, 'patterns', String(pattern.id));
+    const patternDocRef = doc(db, 'patterns', patternDocId);
     await setDoc(patternDocRef, {
       ...patternMeta,
+      id: patternDocId,
+      domainId: 'dsa',
       questionCount
     });
     totalPatterns++;
 
-    console.log(`Uploaded Pattern #${pattern.id}: ${pattern.name} (${pattern.subPatterns?.length || 0} sub-patterns, ${questionCount} questions)`);
+    console.log(`Uploaded Pattern [${patternDocId}]: ${pattern.name} (${pattern.subPatterns?.length || 0} sub-patterns, ${questionCount} questions)`);
   }
 
   console.log(`SUCCESS: Seeded ${totalPatterns} patterns, ${totalSubPatterns} sub-patterns, and ${totalQuestions} questions into Firestore!`);

@@ -129,14 +129,15 @@ export function Sidebar({ patterns, isOpen = true, onToggle, onClose }: SidebarP
               </div>
             ))
           ) : (
-            patterns.map((pattern) => {
-              const numStr = String(pattern.id).padStart(2, '0');
-              const isSelected = pathname === `/dsa/${pattern.id}`;
+            patterns.map((pattern, idx) => {
+              const numStr = String(pattern.displayOrder || idx + 1).padStart(2, '0');
+              const patternSlug = pattern.slug || String(pattern.id);
+              const isSelected = pathname === `/dsa/${patternSlug}` || pathname.startsWith(`/dsa/${patternSlug}/`);
 
               return (
                 <Link
-                  key={pattern.id}
-                  href={`/dsa/${pattern.id}`}
+                  key={pattern.id || patternSlug}
+                  href={`/dsa/${patternSlug}`}
                   onClick={handleNavClick}
                   className={`flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-medium transition-all ${
                     isSelected
@@ -157,7 +158,7 @@ export function Sidebar({ patterns, isOpen = true, onToggle, onClose }: SidebarP
                         : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400'
                     }`}
                   >
-                    {pattern.questions.length}
+                    {pattern.questions ? pattern.questions.length : (pattern.questionCount || 0)}
                   </span>
                 </Link>
               );
