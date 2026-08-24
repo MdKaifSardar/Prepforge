@@ -3,9 +3,14 @@
 import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
-import { User, Mail, ShieldCheck, Calendar, Key, Bookmark, CheckCircle2, Layers, ArrowRight } from 'lucide-react';
+import { User, Mail, ShieldCheck, Calendar, Key, Bookmark, CheckCircle2, Layers, ArrowRight, Settings } from 'lucide-react';
+import { DashboardTab } from '@/components/dashboard/DashboardSidebar';
 
-export function ProfileDashboardView() {
+interface ProfileDashboardViewProps {
+  activeTab?: DashboardTab;
+}
+
+export function ProfileDashboardView({ activeTab = 'overview' }: ProfileDashboardViewProps) {
   const { user, userProfile, loading } = useAuth();
 
   if (loading) {
@@ -62,90 +67,122 @@ export function ProfileDashboardView() {
         </div>
       </div>
 
-      {/* Account Overview Grid */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        {/* Personal Details Card */}
-        <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60 md:col-span-2">
-          <h2 className="mb-4 text-sm font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-            Account & Profile Info
-          </h2>
-
-          <div className="space-y-4 text-xs">
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-3 dark:border-zinc-800">
-              <div className="flex items-center gap-2.5 text-zinc-500 dark:text-zinc-400">
-                <User className="h-4 w-4 text-indigo-500" />
-                <span>Full Name</span>
-              </div>
-              <span className="font-bold text-zinc-900 dark:text-white">{displayName}</span>
-            </div>
-
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-3 dark:border-zinc-800">
-              <div className="flex items-center gap-2.5 text-zinc-500 dark:text-zinc-400">
-                <Mail className="h-4 w-4 text-indigo-500" />
-                <span>Email Address</span>
-              </div>
-              <span className="font-bold text-zinc-900 dark:text-white">{email}</span>
-            </div>
-
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-3 dark:border-zinc-800">
-              <div className="flex items-center gap-2.5 text-zinc-500 dark:text-zinc-400">
-                <Key className="h-4 w-4 text-indigo-500" />
-                <span>Authentication Method</span>
-              </div>
-              <span className="font-semibold text-zinc-700 dark:text-zinc-300">{provider}</span>
-            </div>
-
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-3 dark:border-zinc-800">
-              <div className="flex items-center gap-2.5 text-zinc-500 dark:text-zinc-400">
-                <Calendar className="h-4 w-4 text-indigo-500" />
-                <span>Member Since</span>
-              </div>
-              <span className="font-semibold text-zinc-700 dark:text-zinc-300">{createdAt}</span>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5 text-zinc-500 dark:text-zinc-400">
-                <ShieldCheck className="h-4 w-4 text-indigo-500" />
-                <span>Account Access Level</span>
-              </div>
-              <span className="rounded-md bg-zinc-100 px-2 py-0.5 font-mono text-[11px] font-bold text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">
-                {role}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Stats Widget */}
-        <div className="flex flex-col justify-between overflow-hidden rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60">
-          <div>
+      {/* Tab Content Display */}
+      {activeTab === 'overview' && (
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          {/* Personal Details Card */}
+          <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60 md:col-span-2">
             <h2 className="mb-4 text-sm font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-              Prep Progress
+              Account & Profile Info
             </h2>
 
-            <div className="space-y-3">
-              <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-3 dark:border-zinc-800/60 dark:bg-zinc-950/40">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Solved Problems</span>
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+            <div className="space-y-4 text-xs">
+              <div className="flex items-center justify-between border-b border-zinc-100 pb-3 dark:border-zinc-800">
+                <div className="flex items-center gap-2.5 text-zinc-500 dark:text-zinc-400">
+                  <User className="h-4 w-4 text-indigo-500" />
+                  <span>Full Name</span>
                 </div>
-                <p className="mt-2 text-xl font-extrabold text-zinc-900 dark:text-white">0 / 23</p>
+                <span className="font-bold text-zinc-900 dark:text-white">{displayName}</span>
               </div>
 
-              <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-3 dark:border-zinc-800/60 dark:bg-zinc-950/40">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Bookmarked Questions</span>
-                  <Bookmark className="h-4 w-4 text-amber-500" />
+              <div className="flex items-center justify-between border-b border-zinc-100 pb-3 dark:border-zinc-800">
+                <div className="flex items-center gap-2.5 text-zinc-500 dark:text-zinc-400">
+                  <Mail className="h-4 w-4 text-indigo-500" />
+                  <span>Email Address</span>
                 </div>
-                <p className="mt-2 text-xl font-extrabold text-zinc-900 dark:text-white">0 Saved</p>
+                <span className="font-bold text-zinc-900 dark:text-white">{email}</span>
+              </div>
+
+              <div className="flex items-center justify-between border-b border-zinc-100 pb-3 dark:border-zinc-800">
+                <div className="flex items-center gap-2.5 text-zinc-500 dark:text-zinc-400">
+                  <Key className="h-4 w-4 text-indigo-500" />
+                  <span>Authentication Method</span>
+                </div>
+                <span className="font-semibold text-zinc-700 dark:text-zinc-300">{provider}</span>
+              </div>
+
+              <div className="flex items-center justify-between border-b border-zinc-100 pb-3 dark:border-zinc-800">
+                <div className="flex items-center gap-2.5 text-zinc-500 dark:text-zinc-400">
+                  <Calendar className="h-4 w-4 text-indigo-500" />
+                  <span>Member Since</span>
+                </div>
+                <span className="font-semibold text-zinc-700 dark:text-zinc-300">{createdAt}</span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5 text-zinc-500 dark:text-zinc-400">
+                  <ShieldCheck className="h-4 w-4 text-indigo-500" />
+                  <span>Account Access Level</span>
+                </div>
+                <span className="rounded-md bg-zinc-100 px-2 py-0.5 font-mono text-[11px] font-bold text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">
+                  {role}
+                </span>
               </div>
             </div>
           </div>
 
-          <p className="mt-6 text-[11px] text-zinc-400 dark:text-zinc-500">
-            Session active via 14-day secure HTTP-Only cookie.
+          {/* Quick Stats Widget */}
+          <div className="flex flex-col justify-between overflow-hidden rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60">
+            <div>
+              <h2 className="mb-4 text-sm font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                Prep Progress
+              </h2>
+
+              <div className="space-y-3">
+                <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-3 dark:border-zinc-800/60 dark:bg-zinc-950/40">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Solved Problems</span>
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                  </div>
+                  <p className="mt-2 text-xl font-extrabold text-zinc-900 dark:text-white">0 / 23</p>
+                </div>
+
+                <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-3 dark:border-zinc-800/60 dark:bg-zinc-950/40">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Bookmarked Questions</span>
+                    <Bookmark className="h-4 w-4 text-amber-500" />
+                  </div>
+                  <p className="mt-2 text-xl font-extrabold text-zinc-900 dark:text-white">0 Saved</p>
+                </div>
+              </div>
+            </div>
+
+            <p className="mt-6 text-[11px] text-zinc-400 dark:text-zinc-500">
+              Session active via 14-day secure HTTP-Only cookie.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'bookmarks' && (
+        <div className="rounded-2xl border border-zinc-200 bg-white p-8 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60">
+          <Bookmark className="mx-auto mb-3 h-10 w-10 text-amber-500" />
+          <h3 className="text-base font-bold text-zinc-900 dark:text-white">Saved Bookmarked Questions</h3>
+          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+            You haven't bookmarked any pattern questions yet. Click the bookmark icon on any problem page to save it here.
           </p>
         </div>
-      </div>
+      )}
+
+      {activeTab === 'progress' && (
+        <div className="rounded-2xl border border-zinc-200 bg-white p-8 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60">
+          <CheckCircle2 className="mx-auto mb-3 h-10 w-10 text-emerald-500" />
+          <h3 className="text-base font-bold text-zinc-900 dark:text-white">Solved Progress Tracker</h3>
+          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+            Mark problems as solved to track your SDE interview preparation velocity.
+          </p>
+        </div>
+      )}
+
+      {activeTab === 'settings' && (
+        <div className="rounded-2xl border border-zinc-200 bg-white p-8 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60">
+          <Settings className="mx-auto mb-3 h-10 w-10 text-indigo-500" />
+          <h3 className="text-base font-bold text-zinc-900 dark:text-white">Account Settings & Security</h3>
+          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+            Manage your session preferences, password reset triggers, and account security.
+          </p>
+        </div>
+      )}
     </main>
   );
 }
