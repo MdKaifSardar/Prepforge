@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { Code2, Search, Sun, Moon, Zap, Layers, BookOpen, Database } from 'lucide-react';
+import { UserAvatarMenu } from '@/features/auth/components/UserAvatarMenu';
 
 interface NavbarProps {
   onSearch?: (query: string) => void;
@@ -126,6 +127,9 @@ export function Navbar({
               {theme === 'dark' ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-indigo-600" />}
             </button>
           )}
+
+          {/* User Profile Avatar & Dropdown */}
+          <UserAvatarMenu />
         </div>
       </div>
     </header>

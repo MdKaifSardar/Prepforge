@@ -1,5 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getAuth, browserLocalPersistence, setPersistence } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -14,5 +15,13 @@ const firebaseConfig = {
 // Initialize Firebase (singleton pattern for Next.js SSR / Fast Refresh)
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
+const auth = getAuth(app);
 
-export { app, db };
+// Ensure client-side persistence stays active across browser restarts
+if (typeof window !== "undefined") {
+  setPersistence(auth, browserLocalPersistence).catch(err => {
+    console.warn("Firebase Auth persistence configuration warning:", err);
+  });
+}
+
+export { app, db, auth };

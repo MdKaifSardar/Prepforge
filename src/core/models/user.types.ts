@@ -6,12 +6,15 @@ export interface UserProfile {
   displayName?: string;
   photoURL?: string;
   role: UserRole;
+  providerId?: string; // 'google.com' | 'password'
+  emailVerified?: boolean;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface UserProgress {
   userId?: string;
-  solvedQuestions: string[]; // Question slugs or IDs across domains
+  solvedQuestions: string[];
   bookmarkedQuestions: string[];
   customNotes: Record<string, string>;
   updatedAt?: string;
