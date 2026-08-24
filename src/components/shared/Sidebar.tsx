@@ -17,6 +17,13 @@ export function Sidebar({ patterns, isOpen = true, onToggle, onClose }: SidebarP
   const pathname = usePathname();
   const isLoading = !patterns || patterns.length === 0;
 
+  const handleNavClick = () => {
+    // Only close sidebar drawer on mobile devices (<1024px)
+    if (typeof window !== 'undefined' && window.innerWidth < 1024 && onClose) {
+      onClose();
+    }
+  };
+
   return (
     <>
       {/* Mobile Backdrop Overlay */}
@@ -65,7 +72,7 @@ export function Sidebar({ patterns, isOpen = true, onToggle, onClose }: SidebarP
         <div className="mb-4 space-y-1 lg:hidden border-b border-zinc-100 pb-3 dark:border-zinc-800/80">
           <Link
             href="/"
-            onClick={onClose}
+            onClick={handleNavClick}
             className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold ${
               pathname === '/' || pathname.startsWith('/dsa')
                 ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400'
@@ -77,7 +84,7 @@ export function Sidebar({ patterns, isOpen = true, onToggle, onClose }: SidebarP
           </Link>
           <Link
             href="/dbms"
-            onClick={onClose}
+            onClick={handleNavClick}
             className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold ${
               pathname.startsWith('/dbms')
                 ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400'
@@ -89,7 +96,7 @@ export function Sidebar({ patterns, isOpen = true, onToggle, onClose }: SidebarP
           </Link>
           <Link
             href="/sql"
-            onClick={onClose}
+            onClick={handleNavClick}
             className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold ${
               pathname.startsWith('/sql')
                 ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400'
@@ -130,7 +137,7 @@ export function Sidebar({ patterns, isOpen = true, onToggle, onClose }: SidebarP
                 <Link
                   key={pattern.id}
                   href={`/dsa/${pattern.id}`}
-                  onClick={onClose}
+                  onClick={handleNavClick}
                   className={`flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-medium transition-all ${
                     isSelected
                       ? 'bg-indigo-600 text-white font-semibold shadow-sm shadow-indigo-600/30 dark:bg-indigo-600'
