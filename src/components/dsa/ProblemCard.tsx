@@ -9,7 +9,8 @@ interface ProblemCardProps {
 }
 
 export function ProblemCard({ question, subPatternName }: ProblemCardProps) {
-  const slug = question.title.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+  const patternSlug = question.patternSlug || 'hashing-frequency-counting';
+  const questionSlug = question.slug || question.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
   const diffBadgeClasses = {
     easy: 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-400',
@@ -19,7 +20,7 @@ export function ProblemCard({ question, subPatternName }: ProblemCardProps) {
 
   return (
     <Link
-      href={`/dsa/problem/${slug}`}
+      href={`/dsa/problem/${patternSlug}/${questionSlug}`}
       className="group flex items-center justify-between rounded-xl border border-zinc-200 bg-white p-4 transition-all hover:border-indigo-500 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/60 dark:hover:border-indigo-500 dark:hover:bg-zinc-900"
     >
       <div className="flex items-center gap-3 truncate">

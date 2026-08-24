@@ -4,13 +4,16 @@ import { SubPattern, Question } from '@/lib/models/dsa.types';
 import { ArrowRight, Layers } from 'lucide-react';
 
 interface SubPatternGridProps {
-  patternId: number;
+  patternId: number | string;
+  patternSlug?: string;
   subPatterns: SubPattern[];
   questions: Question[];
 }
 
-export function SubPatternGrid({ patternId, subPatterns, questions }: SubPatternGridProps) {
+export function SubPatternGrid({ patternId, patternSlug, subPatterns, questions }: SubPatternGridProps) {
   if (!subPatterns || subPatterns.length === 0) return null;
+
+  const targetPatternSlug = patternSlug || String(patternId);
 
   return (
     <div className="mb-8 rounded-2xl border border-zinc-200 bg-zinc-50/50 p-6 dark:border-zinc-800 dark:bg-zinc-900/40">
@@ -26,12 +29,13 @@ export function SubPatternGrid({ patternId, subPatterns, questions }: SubPattern
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {subPatterns.map((sp) => {
-          const qCount = questions.filter(q => q.subPatternId === sp.id).length;
+          const qCount = questions.filter(q => q.subPatternId === sp.id || q.subPatternSlug === sp.slug).length;
+          const subSlug = sp.slug || sp.id;
 
           return (
             <Link
-              key={sp.id}
-              href={`/dsa/${patternId}/sub/${sp.id}`}
+              key={sp.id || subSlug}
+              href={`/dsa/${targetPatternSlug}/sub/${subSlug}`}
               className="group flex flex-col justify-between rounded-xl border border-zinc-200 bg-white p-4 transition-all hover:-translate-y-0.5 hover:border-indigo-500 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-indigo-500"
             >
               <div>

@@ -17,14 +17,15 @@ export function PatternDetailView({ pattern }: PatternDetailViewProps) {
   const [activeSubId, setActiveSubId] = useState<string>('all');
   const [activeDiff, setActiveDiff] = useState<'all' | 'easy' | 'medium' | 'hard'>('all');
 
-  const numStr = String(pattern.id).padStart(2, '0');
+  const numStr = String(pattern.displayOrder || pattern.id).padStart(2, '0');
+  const patternSlug = pattern.slug || String(pattern.id);
   const subMap = new Map<string, string>();
   if (pattern.subPatterns) {
     pattern.subPatterns.forEach(sp => subMap.set(sp.id, sp.name));
   }
 
   const filteredQuestions = pattern.questions.filter(q => {
-    const matchesSub = activeSubId === 'all' || q.subPatternId === activeSubId;
+    const matchesSub = activeSubId === 'all' || q.subPatternId === activeSubId || q.subPatternSlug === activeSubId;
     const matchesDiff = activeDiff === 'all' || q.diff === activeDiff;
     return matchesSub && matchesDiff;
   });
@@ -133,6 +134,7 @@ export function PatternDetailView({ pattern }: PatternDetailViewProps) {
       {/* Sub-Pattern Blueprint Cards Grid */}
       <SubPatternGrid
         patternId={pattern.id}
+        patternSlug={patternSlug}
         subPatterns={pattern.subPatterns || []}
         questions={pattern.questions}
       />

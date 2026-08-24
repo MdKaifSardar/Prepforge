@@ -10,12 +10,15 @@ export interface Domain {
 }
 
 export interface BaseQuestion {
-  id: string;             // Slug or unique key (e.g. "two-sum" or "second-highest-salary")
-  domainId: DomainId;     // 'dsa' | 'sql' | 'dbms'
+  id: string;               // Immutable primary ID (e.g., "q_two_sum")
+  slug: string;             // SEO-friendly slug (e.g., "two-sum")
+  domainId: DomainId;       // 'dsa' | 'sql' | 'dbms'
   title: string;
   diff: 'easy' | 'medium' | 'hard';
-  topicId: string | number; // Pattern ID (DSA) or Topic ID (SQL/DBMS)
-  subTopicId?: string;
+  topicId: string;          // Primary Pattern/Topic ID
+  patternSlug?: string;     // Parent Pattern SEO slug (e.g., "hashing-frequency")
+  subTopicId?: string;      // Sub-Pattern ID
+  subPatternSlug?: string;  // Parent Sub-Pattern SEO slug (e.g., "hash-frequency")
   tags?: string[];
   isPublished?: boolean;
   createdAt?: string;
@@ -23,9 +26,11 @@ export interface BaseQuestion {
 }
 
 export interface BaseTopic {
-  id: string | number;
+  id: string;               // Immutable primary ID (e.g., "p_hashing")
+  slug: string;             // SEO-friendly slug (e.g., "hashing-frequency")
   domainId: DomainId;
   name: string;
+  displayOrder: number;     // Order for UI rendering
   cues: string[];
   thinkAbout?: string;
   coreIdea?: string;
@@ -38,8 +43,10 @@ export interface BaseTopic {
 }
 
 export interface BaseSubTopic {
-  id: string;
-  topicId: string | number;
+  id: string;               // Immutable primary ID (e.g., "sp_hash_freq")
+  slug: string;             // SEO-friendly slug (e.g., "hash-frequency")
+  topicId: string;          // Parent Topic ID
+  patternSlug?: string;     // Parent Pattern SEO slug
   name: string;
   cues: string[];
   thinkAbout?: string;
