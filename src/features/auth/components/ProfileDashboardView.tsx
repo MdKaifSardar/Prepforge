@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
 import { User, Mail, ShieldCheck, Calendar, Key, Bookmark, CheckCircle2, Layers, ArrowRight, Settings } from 'lucide-react';
@@ -12,6 +12,7 @@ interface ProfileDashboardViewProps {
 
 export function ProfileDashboardView({ activeTab = 'overview' }: ProfileDashboardViewProps) {
   const { user, userProfile, loading } = useAuth();
+  const [imgError, setImgError] = useState(false);
 
   if (loading) {
     return (
@@ -34,8 +35,14 @@ export function ProfileDashboardView({ activeTab = 'overview' }: ProfileDashboar
       <div className="mb-8 overflow-hidden rounded-3xl border border-indigo-200 bg-gradient-to-br from-indigo-50/80 via-white to-purple-50/60 p-8 shadow-sm dark:border-indigo-900/40 dark:from-indigo-950/40 dark:via-zinc-900 dark:to-purple-950/30">
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-5">
-            {photoURL ? (
-              <img src={photoURL} alt={displayName} className="h-16 w-16 rounded-full border-2 border-indigo-500/30 object-cover shadow-lg" />
+            {photoURL && !imgError ? (
+              <img
+                src={photoURL}
+                alt={displayName}
+                referrerPolicy="no-referrer"
+                onError={() => setImgError(true)}
+                className="h-16 w-16 rounded-full border-2 border-indigo-500/30 object-cover shadow-lg"
+              />
             ) : (
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-2xl font-extrabold text-white shadow-lg">
                 {displayName.charAt(0).toUpperCase()}
