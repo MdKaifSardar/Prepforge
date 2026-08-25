@@ -2,6 +2,484 @@ import { Pattern } from '../models/dsa.types';
 
 export const PATTERNS_DATA: Pattern[] = [
   {
+    "id": "p_matrix_simulation_transformations",
+    "slug": "matrix-simulation-array-transformations",
+    "name": "Matrix Simulation & Array Transformations",
+    "displayOrder": 1,
+    "cues": [
+      "Spiral matrix traversal / generation",
+      "In-place 90 degree matrix rotation",
+      "Set matrix zeroes with O(1) space",
+      "Pascal's Triangle row generation",
+      "Next Permutation pivot swap"
+    ],
+    "thinkAbout": "When working with 2D grid matrix boundaries, 90-degree spatial symmetry, or in-place state marking using 1st row/col as dummy storage.",
+    "coreIdea": "Simulate matrix layer-by-layer using 4 shrinking boundary variables (top, bottom, left, right), or perform transpose + row/col reversal for spatial rotations.",
+    "templateLabel": "C++ Matrix Traversal & Rotation Template",
+    "templateCode": "// Spiral Traversal Template\nint top = 0, bottom = R - 1, left = 0, right = C - 1;\nwhile (top <= bottom && left <= right) {\n    for (int col = left; col <= right; col++) process(matrix[top][col]);\n    top++;\n    for (int row = top; row <= bottom; row++) process(matrix[row][right]);\n    right--;\n    if (top <= bottom) {\n        for (int col = right; col >= left; col--) process(matrix[bottom][col]);\n        bottom--;\n    }\n    if (left <= right) {\n        for (int row = bottom; row >= top; row--) process(matrix[row][left]);\n        left++;\n    }\n}",
+    "timeComplexity": "O(R * C) matrix scan.",
+    "spaceComplexity": "O(1) auxiliary space.",
+    "pitfalls": [
+      "Forgetting to check top <= bottom and left <= right conditions before inner leftward/upward loops in non-square matrices.",
+      "Not transposing before row reversal in 90-degree matrix rotation."
+    ],
+    "subPatterns": [
+      {
+        "id": "sp_matrix_spiral",
+        "slug": "matrix-spiral-traversal-generation",
+        "patternSlug": "matrix-simulation-array-transformations",
+        "patternId": "p_matrix_simulation_transformations",
+        "name": "Matrix Spiral Traversal & Generation",
+        "cues": [
+          "Spiral matrix traversal",
+          "Spiral grid generation"
+        ],
+        "thinkAbout": "When traversing 2D grid layers in clockwise order.",
+        "coreIdea": "Maintain 4 boundary pointers. Shrink boundaries after completing each direction.",
+        "templateCode": "// Spiral Matrix Generation Template"
+      },
+      {
+        "id": "sp_matrix_rotation",
+        "slug": "matrix-symmetry-rotations",
+        "patternSlug": "matrix-simulation-array-transformations",
+        "patternId": "p_matrix_simulation_transformations",
+        "name": "Matrix Symmetry & In-Place Rotations",
+        "cues": [
+          "Rotate image 90 degrees",
+          "In-place grid transpose"
+        ],
+        "thinkAbout": "When rotating NxN matrix by 90 degrees in-place without extra matrix memory.",
+        "coreIdea": "Clockwise 90° = Transpose matrix (swap A[i][j] & A[j][i]) + reverse each row.",
+        "templateCode": "// Transpose + Reverse Rows\nfor (int i = 0; i < n; i++)\n    for (int j = i + 1; j < n; j++) swap(matrix[i][j], matrix[j][i]);\nfor (int i = 0; i < n; i++) reverse(matrix[i].begin(), matrix[i].end());"
+      },
+      {
+        "id": "sp_matrix_state_pattern",
+        "slug": "matrix-state-marking-patterns",
+        "patternSlug": "matrix-simulation-array-transformations",
+        "patternId": "p_matrix_simulation_transformations",
+        "name": "Matrix State Marking & Pattern Generation",
+        "cues": [
+          "Set matrix zeroes in O(1) space",
+          "Pascal's triangle",
+          "Next permutation"
+        ],
+        "thinkAbout": "When marking grid state using 1st row/col markers or generating next lexicographical permutation.",
+        "coreIdea": "Use first row and column as flag indicators to avoid O(R*C) extra memory.",
+        "templateCode": "// Matrix Zeroes Dummy Marker"
+      }
+    ],
+    "questions": [
+      {
+        "id": "q_spiral_matrix",
+        "slug": "spiral-matrix",
+        "patternSlug": "matrix-simulation-array-transformations",
+        "subPatternId": "sp_matrix_spiral",
+        "subPatternSlug": "matrix-spiral-traversal-generation",
+        "patternId": "p_matrix_simulation_transformations",
+        "lcNum": "LC 54",
+        "title": "Spiral Matrix",
+        "url": "https://leetcode.com/problems/spiral-matrix/",
+        "diff": "medium",
+        "statement": "Given an `m x n` `matrix`, return all elements of the `matrix` in spiral order.",
+        "bruteForce": {
+          "explanation": "Maintain visited boolean matrix of size M x N and directional offsets in O(M * N) space.",
+          "timeComp": "O(M * N)",
+          "spaceComp": "O(M * N)",
+          "cppCode": "class Solution {\npublic:\n    vector<int> spiralOrder(vector<vector<int>>& matrix) {\n        vector<int> res;\n        if (matrix.empty()) return res;\n        int m = matrix.size(), n = matrix[0].size();\n        vector<vector<bool>> visited(m, vector<bool>(n, false));\n        int dr[] = {0, 1, 0, -1}, dc[] = {1, 0, -1, 0};\n        int r = 0, c = 0, di = 0;\n        for (int i = 0; i < m * n; i++) {\n            res.push_back(matrix[r][c]);\n            visited[r][c] = true;\n            int cr = r + dr[di], cc = c + dc[di];\n            if (cr >= 0 && cr < m && cc >= 0 && cc < n && !visited[cr][cc]) {\n                r = cr; c = cc;\n            } else {\n                di = (di + 1) % 4;\n                r += dr[di]; c += dc[di];\n            }\n        }\n        return res;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Maintain 4 boundary variables (top, bottom, left, right). Shrink boundaries after traversing each edge in O(1) space.",
+          "timeComp": "O(M * N)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    vector<int> spiralOrder(vector<vector<int>>& matrix) {\n        vector<int> res;\n        if (matrix.empty()) return res;\n        int top = 0, bottom = matrix.size() - 1;\n        int left = 0, right = matrix[0].size() - 1;\n\n        while (top <= bottom && left <= right) {\n            for (int col = left; col <= right; col++) res.push_back(matrix[top][col]);\n            top++;\n\n            for (int row = top; row <= bottom; row++) res.push_back(matrix[row][right]);\n            right--;\n\n            if (top <= bottom) {\n                for (int col = right; col >= left; col--) res.push_back(matrix[bottom][col]);\n                bottom--;\n            }\n\n            if (left <= right) {\n                for (int row = bottom; row >= top; row--) res.push_back(matrix[row][left]);\n                left++;\n            }\n        }\n        return res;\n    }\n};"
+        }
+      },
+      {
+        "id": "q_spiral_matrix_ii",
+        "slug": "spiral-matrix-ii",
+        "patternSlug": "matrix-simulation-array-transformations",
+        "subPatternId": "sp_matrix_spiral",
+        "subPatternSlug": "matrix-spiral-traversal-generation",
+        "patternId": "p_matrix_simulation_transformations",
+        "lcNum": "LC 59",
+        "title": "Spiral Matrix II",
+        "url": "https://leetcode.com/problems/spiral-matrix-ii/",
+        "diff": "medium",
+        "statement": "Given a positive integer `n`, generate an `n x n` `matrix` filled with elements from `1` to `n^2` in spiral order.",
+        "bruteForce": {
+          "explanation": "Simulate movement with direction vectors (dr, dc) filling values 1 to n^2.",
+          "timeComp": "O(N^2)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    vector<vector<int>> generateMatrix(int n) {\n        vector<vector<int>> res(n, vector<int>(n, 0));\n        int val = 1, top = 0, bottom = n - 1, left = 0, right = n - 1;\n        while (val <= n * n) {\n            for (int col = left; col <= right; col++) res[top][col] = val++;\n            top++;\n            for (int row = top; row <= bottom; row++) res[row][right] = val++;\n            right--;\n            for (int col = right; col >= left; col--) res[bottom][col] = val++;\n            bottom--;\n            for (int row = bottom; row >= top; row--) res[row][left] = val++;\n            left++;\n        }\n        return res;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Use 4-boundary pointers (top, bottom, left, right) to populate cells sequentially from 1 to n^2.",
+          "timeComp": "O(N^2)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    vector<vector<int>> generateMatrix(int n) {\n        vector<vector<int>> res(n, vector<int>(n, 0));\n        int val = 1;\n        int top = 0, bottom = n - 1, left = 0, right = n - 1;\n\n        while (top <= bottom && left <= right) {\n            for (int col = left; col <= right; col++) res[top][col] = val++;\n            top++;\n\n            for (int row = top; row <= bottom; row++) res[row][right] = val++;\n            right--;\n\n            if (top <= bottom) {\n                for (int col = right; col >= left; col--) res[bottom][col] = val++;\n                bottom--;\n            }\n\n            if (left <= right) {\n                for (int row = bottom; row >= top; row--) res[row][left] = val++;\n                left++;\n            }\n        }\n        return res;\n    }\n};"
+        }
+      },
+      {
+        "id": "q_rotate_image",
+        "slug": "rotate-image",
+        "patternSlug": "matrix-simulation-array-transformations",
+        "subPatternId": "sp_matrix_rotation",
+        "subPatternSlug": "matrix-symmetry-rotations",
+        "patternId": "p_matrix_simulation_transformations",
+        "lcNum": "LC 48",
+        "title": "Rotate Image",
+        "url": "https://leetcode.com/problems/rotate-image/",
+        "diff": "medium",
+        "statement": "You are given an `n x n` 2D `matrix` representing an image, rotate the image by 90 degrees (clockwise) in-place.",
+        "bruteForce": {
+          "explanation": "Copy matrix elements to a temporary N x N grid where `temp[j][n - 1 - i] = matrix[i][j]`, then copy back.",
+          "timeComp": "O(N^2)",
+          "spaceComp": "O(N^2)",
+          "cppCode": "class Solution {\npublic:\n    void rotate(vector<vector<int>>& matrix) {\n        int n = matrix.size();\n        vector<vector<int>> temp = matrix;\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < n; j++) {\n                matrix[j][n - 1 - i] = temp[i][j];\n            }\n        }\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "In-place Transpose (swap matrix[i][j] with matrix[j][i]) followed by reversing each row in O(1) space.",
+          "timeComp": "O(N^2)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    void rotate(vector<vector<int>>& matrix) {\n        int n = matrix.size();\n        // 1. Transpose Matrix\n        for (int i = 0; i < n; i++) {\n            for (int j = i + 1; j < n; j++) {\n                swap(matrix[i][j], matrix[j][i]);\n            }\n        }\n        // 2. Reverse Each Row\n        for (int i = 0; i < n; i++) {\n            reverse(matrix[i].begin(), matrix[i].end());\n        }\n    }\n};"
+        }
+      },
+      {
+        "id": "q_set_matrix_zeroes",
+        "slug": "set-matrix-zeroes",
+        "patternSlug": "matrix-simulation-array-transformations",
+        "subPatternId": "sp_matrix_state_pattern",
+        "subPatternSlug": "matrix-state-marking-patterns",
+        "patternId": "p_matrix_simulation_transformations",
+        "lcNum": "LC 73",
+        "title": "Set Matrix Zeroes",
+        "url": "https://leetcode.com/problems/set-matrix-zeroes/",
+        "diff": "medium",
+        "statement": "Given an `m x n` integer matrix `matrix`, if an element is `0`, set its entire row and column to `0`'s in-place.",
+        "bruteForce": {
+          "explanation": "Use separate boolean arrays `row[M]` and `col[N]` to mark zero rows and columns in O(M + N) space.",
+          "timeComp": "O(M * N)",
+          "spaceComp": "O(M + N)",
+          "cppCode": "class Solution {\npublic:\n    void setZeroes(vector<vector<int>>& matrix) {\n        int m = matrix.size(), n = matrix[0].size();\n        vector<bool> row(m, false), col(n, false);\n        for (int i = 0; i < m; i++) {\n            for (int j = 0; j < n; j++) {\n                if (matrix[i][j] == 0) { row[i] = true; col[j] = true; }\n            }\n        }\n        for (int i = 0; i < m; i++) {\n            for (int j = 0; j < n; j++) {\n                if (row[i] || col[j]) matrix[i][j] = 0;\n            }\n        }\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Use 1st row & 1st col of matrix as dummy flag markers + two extra booleans for 1st row/col itself in O(1) space.",
+          "timeComp": "O(M * N)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    void setZeroes(vector<vector<int>>& matrix) {\n        int m = matrix.size(), n = matrix[0].size();\n        bool firstRowZero = false, firstColZero = false;\n\n        for (int i = 0; i < m; i++) if (matrix[i][0] == 0) firstColZero = true;\n        for (int j = 0; j < n; j++) if (matrix[0][j] == 0) firstRowZero = true;\n\n        for (int i = 1; i < m; i++) {\n            for (int j = 1; j < n; j++) {\n                if (matrix[i][j] == 0) {\n                    matrix[i][0] = 0;\n                    matrix[0][j] = 0;\n                }\n            }\n        }\n\n        for (int i = 1; i < m; i++) {\n            for (int j = 1; j < n; j++) {\n                if (matrix[i][0] == 0 || matrix[0][j] == 0) {\n                    matrix[i][j] = 0;\n                }\n            }\n        }\n\n        if (firstColZero) for (int i = 0; i < m; i++) matrix[i][0] = 0;\n        if (firstRowZero) for (int j = 0; j < n; j++) matrix[0][j] = 0;\n    }\n};"
+        }
+      },
+      {
+        "id": "q_pascals_triangle",
+        "slug": "pascals-triangle",
+        "patternSlug": "matrix-simulation-array-transformations",
+        "subPatternId": "sp_matrix_state_pattern",
+        "subPatternSlug": "matrix-state-marking-patterns",
+        "patternId": "p_matrix_simulation_transformations",
+        "lcNum": "LC 118",
+        "title": "Pascal's Triangle",
+        "url": "https://leetcode.com/problems/pascals-triangle/",
+        "diff": "easy",
+        "statement": "Given an integer `numRows`, return the first `numRows` of Pascal's triangle.",
+        "bruteForce": {
+          "explanation": "Compute each cell using Combination formula C(n, k) = n! / (k! * (n-k)!) in O(N^3).",
+          "timeComp": "O(N^3)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    vector<vector<int>> generate(int numRows) {\n        vector<vector<int>> res;\n        for (int i = 0; i < numRows; i++) {\n            vector<int> row(i + 1, 1);\n            for (int j = 1; j < i; j++) {\n                row[j] = res[i - 1][j - 1] + res[i - 1][j];\n            }\n            res.push_back(row);\n        }\n        return res;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Generate each row iteratively setting inner elements `row[j] = res[i-1][j-1] + res[i-1][j]` in O(N^2) time.",
+          "timeComp": "O(N^2)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    vector<vector<int>> generate(int numRows) {\n        vector<vector<int>> res;\n        for (int i = 0; i < numRows; i++) {\n            vector<int> row(i + 1, 1);\n            for (int j = 1; j < i; j++) {\n                row[j] = res[i - 1][j - 1] + res[i - 1][j];\n            }\n            res.push_back(row);\n        }\n        return res;\n    }\n};"
+        }
+      },
+      {
+        "id": "q_next_permutation",
+        "slug": "next-permutation",
+        "patternSlug": "matrix-simulation-array-transformations",
+        "subPatternId": "sp_matrix_state_pattern",
+        "subPatternSlug": "matrix-state-marking-patterns",
+        "patternId": "p_matrix_simulation_transformations",
+        "lcNum": "LC 31",
+        "title": "Next Permutation",
+        "url": "https://leetcode.com/problems/next-permutation/",
+        "diff": "medium",
+        "statement": "Rearrange numbers into the lexicographically next greater permutation of numbers in-place.",
+        "bruteForce": {
+          "explanation": "Generate all permutations in O(N!), sort them, and find the successor.",
+          "timeComp": "O(N! * N)",
+          "spaceComp": "O(N!)",
+          "cppCode": "// Generate all permutations recursively"
+        },
+        "optimal": {
+          "explanation": "3 Steps: 1) Find largest index i where nums[i] < nums[i+1]. 2) Find index j > i where nums[j] > nums[i] and swap. 3) Reverse suffix from i+1.",
+          "timeComp": "O(N)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    void nextPermutation(vector<int>& nums) {\n        int n = nums.size(), i = n - 2;\n        while (i >= 0 && nums[i] >= nums[i + 1]) i--;\n\n        if (i >= 0) {\n            int j = n - 1;\n            while (nums[j] <= nums[i]) j--;\n            swap(nums[i], nums[j]);\n        }\n        reverse(nums.begin() + i + 1, nums.end());\n    }\n};"
+        }
+      }
+    ]
+  },
+  {
+    "id": "p_sorting_algorithms_comparators",
+    "slug": "sorting-algorithms-custom-comparators",
+    "name": "Complete Sorting Algorithms Suite",
+    "displayOrder": 2,
+    "cues": [
+      "O(N^2) Selection, Bubble & Insertion Sorts",
+      "O(N log N) Merge, Quick & Heap Sorts",
+      "O(N) Counting, Radix & Bucket Sorts",
+      "Custom String Comparators (Largest Number)",
+      "Dutch National Flag 3-way Partition"
+    ],
+    "thinkAbout": "When understanding foundational sorting time/space trade-offs, custom comparator ordering, or in-place array partitioning.",
+    "coreIdea": "Choose sorting strategy based on input constraints: O(N log N) comparison sorts for arbitrary elements, or O(N) linear non-comparison sorts for bounded integer ranges.",
+    "templateLabel": "C++ Merge Sort & Quick Sort Templates",
+    "templateCode": "// QuickSort Partition Template\nint partition(vector<int>& nums, int low, int high) {\n    int pivot = nums[high], i = low - 1;\n    for (int j = low; j < high; j++) {\n        if (nums[j] <= pivot) { i++; swap(nums[i], nums[j]); }\n    }\n    swap(nums[i + 1], nums[high]);\n    return i + 1;\n}",
+    "timeComplexity": "O(N log N) average for comparison sorts; O(N + K) for linear sorts.",
+    "spaceComplexity": "O(1) in-place (Quick/Heap Sort) to O(N) (Merge/Counting Sort).",
+    "pitfalls": [
+      "QuickSort worst-case O(N^2) performance on already sorted inputs without randomized pivot selection.",
+      "Custom comparator breaking strict weak ordering requirements."
+    ],
+    "subPatterns": [
+      {
+        "id": "sp_sort_elementary",
+        "slug": "elementary-comparison-sorts",
+        "patternSlug": "sorting-algorithms-custom-comparators",
+        "patternId": "p_sorting_algorithms_comparators",
+        "name": "Elementary Comparison Sorts (O(N^2))",
+        "cues": [
+          "Selection sort",
+          "Bubble sort",
+          "Insertion sort"
+        ],
+        "thinkAbout": "Foundational O(N^2) quadratic sorting mechanics.",
+        "coreIdea": "Selection: swap min element. Bubble: swap adjacent inverted pairs. Insertion: shift elements right."
+      },
+      {
+        "id": "sp_sort_divide_conquer",
+        "slug": "divide-conquer-advanced-sorts",
+        "patternSlug": "sorting-algorithms-custom-comparators",
+        "patternId": "p_sorting_algorithms_comparators",
+        "name": "Divide & Conquer & Advanced Sorts (O(N log N))",
+        "cues": [
+          "Merge sort",
+          "Quick sort",
+          "Heap sort",
+          "Count inversions"
+        ],
+        "thinkAbout": "O(N log N) comparison sorts for general arrays.",
+        "coreIdea": "Merge sort divides in halves and merges. Quick sort partitions around pivot. Heap sort uses Max-Heap."
+      },
+      {
+        "id": "sp_sort_linear",
+        "slug": "linear-non-comparison-sorts",
+        "patternSlug": "sorting-algorithms-custom-comparators",
+        "patternId": "p_sorting_algorithms_comparators",
+        "name": "Linear Non-Comparison Sorts (O(N))",
+        "cues": [
+          "Counting sort",
+          "Radix sort",
+          "Bucket sort"
+        ],
+        "thinkAbout": "When array values lie in a bounded integer/float range.",
+        "coreIdea": "Bypasses O(N log N) lower bound using frequency arrays or bucket distribution."
+      },
+      {
+        "id": "sp_sort_specialized",
+        "slug": "custom-comparators-string-sorting",
+        "patternSlug": "sorting-algorithms-custom-comparators",
+        "patternId": "p_sorting_algorithms_comparators",
+        "name": "Custom Comparators & String Sorting",
+        "cues": [
+          "Largest Number",
+          "Custom comparator sort"
+        ],
+        "thinkAbout": "When sorting elements by custom algebraic or string concatenation rules.",
+        "coreIdea": "Define custom lambda `[](string& a, string& b) { return a + b > b + a; }`."
+      }
+    ],
+    "questions": [
+      {
+        "id": "q_selection_sort",
+        "slug": "selection-sort",
+        "patternSlug": "sorting-algorithms-custom-comparators",
+        "subPatternId": "sp_sort_elementary",
+        "subPatternSlug": "elementary-comparison-sorts",
+        "patternId": "p_sorting_algorithms_comparators",
+        "lcNum": "ALG 1",
+        "title": "Selection Sort Algorithm Blueprint",
+        "url": "https://leetcode.com/problems/sort-an-array/",
+        "diff": "easy",
+        "statement": "Implement Selection Sort: repeatedly find the minimum element from the unsorted region and swap it with the first unsorted element.",
+        "bruteForce": {
+          "explanation": "Selection sort performs O(N^2) comparisons and O(N) swaps regardless of initial order.",
+          "timeComp": "O(N^2)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    vector<int> selectionSort(vector<int>& nums) {\n        int n = nums.size();\n        for (int i = 0; i < n - 1; i++) {\n            int minIdx = i;\n            for (int j = i + 1; j < n; j++) {\n                if (nums[j] < nums[minIdx]) minIdx = j;\n            }\n            swap(nums[i], nums[minIdx]);\n        }\n        return nums;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Selection sort in-place implementation maintaining unsorted boundary.",
+          "timeComp": "O(N^2)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    vector<int> selectionSort(vector<int>& nums) {\n        int n = nums.size();\n        for (int i = 0; i < n - 1; i++) {\n            int minIdx = i;\n            for (int j = i + 1; j < n; j++) {\n                if (nums[j] < nums[minIdx]) minIdx = j;\n            }\n            swap(nums[i], nums[minIdx]);\n        }\n        return nums;\n    }\n};"
+        }
+      },
+      {
+        "id": "q_bubble_sort",
+        "slug": "bubble-sort",
+        "patternSlug": "sorting-algorithms-custom-comparators",
+        "subPatternId": "sp_sort_elementary",
+        "subPatternSlug": "elementary-comparison-sorts",
+        "patternId": "p_sorting_algorithms_comparators",
+        "lcNum": "ALG 2",
+        "title": "Bubble Sort Algorithm Blueprint",
+        "url": "https://leetcode.com/problems/sort-an-array/",
+        "diff": "easy",
+        "statement": "Implement Bubble Sort: repeatedly swap adjacent elements if they are in wrong order. Optimize with an early-exit swapped flag.",
+        "bruteForce": {
+          "explanation": "Standard double nested loop Bubble sort in O(N^2) time.",
+          "timeComp": "O(N^2)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    vector<int> bubbleSort(vector<int>& nums) {\n        int n = nums.size();\n        for (int i = 0; i < n - 1; i++) {\n            for (int j = 0; j < n - i - 1; j++) {\n                if (nums[j] > nums[j + 1]) swap(nums[j], nums[j + 1]);\n            }\n        }\n        return nums;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Bubble sort with early exit flag optimization (`swapped = false`). Best case O(N) when array is already sorted.",
+          "timeComp": "O(N^2)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    vector<int> bubbleSort(vector<int>& nums) {\n        int n = nums.size();\n        for (int i = 0; i < n - 1; i++) {\n            bool swapped = false;\n            for (int j = 0; j < n - i - 1; j++) {\n                if (nums[j] > nums[j + 1]) {\n                    swap(nums[j], nums[j + 1]);\n                    swapped = true;\n                }\n            }\n            if (!swapped) break;\n        }\n        return nums;\n    }\n};"
+        }
+      },
+      {
+        "id": "q_insertion_sort",
+        "slug": "insertion-sort",
+        "patternSlug": "sorting-algorithms-custom-comparators",
+        "subPatternId": "sp_sort_elementary",
+        "subPatternSlug": "elementary-comparison-sorts",
+        "patternId": "p_sorting_algorithms_comparators",
+        "lcNum": "ALG 3",
+        "title": "Insertion Sort Algorithm Blueprint",
+        "url": "https://leetcode.com/problems/sort-an-array/",
+        "diff": "easy",
+        "statement": "Implement Insertion Sort: build the sorted array one item at a time by shifting elements larger than key rightward.",
+        "bruteForce": {
+          "explanation": "Insertion sort shifts larger elements right to insert key into sorted prefix.",
+          "timeComp": "O(N^2)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    vector<int> insertionSort(vector<int>& nums) {\n        int n = nums.size();\n        for (int i = 1; i < n; i++) {\n            int key = nums[i];\n            int j = i - 1;\n            while (j >= 0 && nums[j] > key) {\n                nums[j + 1] = nums[j];\n                j--;\n            }\n            nums[j + 1] = key;\n        }\n        return nums;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "In-place Insertion sort algorithm. Efficient for small or nearly-sorted datasets (O(N) best case).",
+          "timeComp": "O(N^2)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    vector<int> insertionSort(vector<int>& nums) {\n        int n = nums.size();\n        for (int i = 1; i < n; i++) {\n            int key = nums[i];\n            int j = i - 1;\n            while (j >= 0 && nums[j] > key) {\n                nums[j + 1] = nums[j];\n                j--;\n            }\n            nums[j + 1] = key;\n        }\n        return nums;\n    }\n};"
+        }
+      },
+      {
+        "id": "q_merge_sort_inversions",
+        "slug": "merge-sort-inversions",
+        "patternSlug": "sorting-algorithms-custom-comparators",
+        "subPatternId": "sp_sort_divide_conquer",
+        "subPatternSlug": "divide-conquer-advanced-sorts",
+        "patternId": "p_sorting_algorithms_comparators",
+        "lcNum": "ALG 4",
+        "title": "Merge Sort & Inversion Counting Blueprint",
+        "url": "https://leetcode.com/problems/sort-an-array/",
+        "diff": "medium",
+        "statement": "Implement Merge Sort: divide array into two halves, recursively sort each half, and merge them in O(N log N) time.",
+        "bruteForce": {
+          "explanation": "Naive merge sort copying subarrays during merge phase in O(N log N) time and O(N) space.",
+          "timeComp": "O(N log N)",
+          "spaceComp": "O(N)",
+          "cppCode": "class Solution {\n    void merge(vector<int>& nums, int l, int m, int r) {\n        vector<int> left(nums.begin() + l, nums.begin() + m + 1);\n        vector<int> right(nums.begin() + m + 1, nums.begin() + r + 1);\n        int i = 0, j = 0, k = l;\n        while (i < left.size() && j < right.size()) {\n            if (left[i] <= right[j]) nums[k++] = left[i++];\n            else nums[k++] = right[j++];\n        }\n        while (i < left.size()) nums[k++] = left[i++];\n        while (j < right.size()) nums[k++] = right[j++];\n    }\n    void mergeSort(vector<int>& nums, int l, int r) {\n        if (l >= r) return;\n        int m = l + (r - l) / 2;\n        mergeSort(nums, l, m);\n        mergeSort(nums, m + 1, r);\n        merge(nums, l, m, r);\n    }\npublic:\n    vector<int> sortArray(vector<int>& nums) {\n        mergeSort(nums, 0, nums.size() - 1);\n        return nums;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Merge sort using reusable temp buffer to minimize allocations. Also counts inversion pairs (left[i] > right[j]).",
+          "timeComp": "O(N log N)",
+          "spaceComp": "O(N)",
+          "cppCode": "class Solution {\n    void merge(vector<int>& nums, int l, int m, int r, vector<int>& temp) {\n        int i = l, j = m + 1, k = l;\n        while (i <= m && j <= r) {\n            if (nums[i] <= nums[j]) temp[k++] = nums[i++];\n            else temp[k++] = nums[j++];\n        }\n        while (i <= m) temp[k++] = nums[i++];\n        while (j <= r) temp[k++] = nums[j++];\n        for (i = l; i <= r; i++) nums[i] = temp[i];\n    }\n    void mergeSort(vector<int>& nums, int l, int r, vector<int>& temp) {\n        if (l >= r) return;\n        int m = l + (r - l) / 2;\n        mergeSort(nums, l, m, temp);\n        mergeSort(nums, m + 1, r, temp);\n        merge(nums, l, m, r, temp);\n    }\npublic:\n    vector<int> sortArray(vector<int>& nums) {\n        vector<int> temp(nums.size());\n        mergeSort(nums, 0, nums.size() - 1, temp);\n        return nums;\n    }\n};"
+        }
+      },
+      {
+        "id": "q_quick_sort",
+        "slug": "quick-sort",
+        "patternSlug": "sorting-algorithms-custom-comparators",
+        "subPatternId": "sp_sort_divide_conquer",
+        "subPatternSlug": "divide-conquer-advanced-sorts",
+        "patternId": "p_sorting_algorithms_comparators",
+        "lcNum": "ALG 5",
+        "title": "Quick Sort Algorithm Blueprint",
+        "url": "https://leetcode.com/problems/sort-an-array/",
+        "diff": "medium",
+        "statement": "Implement Quick Sort using Lomuto partitioning with randomized pivot selection.",
+        "bruteForce": {
+          "explanation": "Standard QuickSort without randomized pivot (vulnerable to O(N^2) on sorted input).",
+          "timeComp": "O(N log N) avg, O(N^2) worst",
+          "spaceComp": "O(log N) stack",
+          "cppCode": "class Solution {\n    int partition(vector<int>& nums, int low, int high) {\n        int pivot = nums[high], i = low - 1;\n        for (int j = low; j < high; j++) {\n            if (nums[j] <= pivot) swap(nums[++i], nums[j]);\n        }\n        swap(nums[i + 1], nums[high]);\n        return i + 1;\n    }\n    void quickSort(vector<int>& nums, int low, int high) {\n        if (low < high) {\n            int p = partition(nums, low, high);\n            quickSort(nums, low, p - 1);\n            quickSort(nums, p + 1, high);\n        }\n    }\npublic:\n    vector<int> sortArray(vector<int>& nums) {\n        quickSort(nums, 0, nums.size() - 1);\n        return nums;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Randomized QuickSort swapping random pivot to high, guaranteeing O(N log N) expected time.",
+          "timeComp": "O(N log N) expected",
+          "spaceComp": "O(log N) stack",
+          "cppCode": "class Solution {\n    int partition(vector<int>& nums, int low, int high) {\n        int randIdx = low + rand() % (high - low + 1);\n        swap(nums[randIdx], nums[high]);\n        int pivot = nums[high], i = low - 1;\n        for (int j = low; j < high; j++) {\n            if (nums[j] <= pivot) swap(nums[++i], nums[j]);\n        }\n        swap(nums[i + 1], nums[high]);\n        return i + 1;\n    }\n    void quickSort(vector<int>& nums, int low, int high) {\n        if (low < high) {\n            int p = partition(nums, low, high);\n            quickSort(nums, low, p - 1);\n            quickSort(nums, p + 1, high);\n        }\n    }\npublic:\n    vector<int> sortArray(vector<int>& nums) {\n        quickSort(nums, 0, nums.size() - 1);\n        return nums;\n    }\n};"
+        }
+      },
+      {
+        "id": "q_counting_sort",
+        "slug": "counting-sort",
+        "patternSlug": "sorting-algorithms-custom-comparators",
+        "subPatternId": "sp_sort_linear",
+        "subPatternSlug": "linear-non-comparison-sorts",
+        "patternId": "p_sorting_algorithms_comparators",
+        "lcNum": "ALG 6",
+        "title": "Counting Sort Algorithm Blueprint",
+        "url": "https://leetcode.com/problems/sort-an-array/",
+        "diff": "easy",
+        "statement": "Implement Counting Sort: sort array of integers in bounded range [minVal, maxVal] in linear O(N + K) time.",
+        "bruteForce": {
+          "explanation": "Use hash map frequency count in O(N + K) time.",
+          "timeComp": "O(N + K)",
+          "spaceComp": "O(K)",
+          "cppCode": "class Solution {\npublic:\n    vector<int> countingSort(vector<int>& nums) {\n        if (nums.empty()) return nums;\n        int minVal = *min_element(nums.begin(), nums.end());\n        int maxVal = *max_element(nums.begin(), nums.end());\n        int range = maxVal - minVal + 1;\n\n        vector<int> count(range, 0);\n        for (int x : nums) count[x - minVal]++;\n\n        int idx = 0;\n        for (int i = 0; i < range; i++) {\n            while (count[i]-- > 0) nums[idx++] = i + minVal;\n        }\n        return nums;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Counting sort maintaining stable prefix sum count array in O(N + K) time.",
+          "timeComp": "O(N + K)",
+          "spaceComp": "O(K)",
+          "cppCode": "class Solution {\npublic:\n    vector<int> countingSort(vector<int>& nums) {\n        if (nums.empty()) return nums;\n        int minVal = *min_element(nums.begin(), nums.end());\n        int maxVal = *max_element(nums.begin(), nums.end());\n        int range = maxVal - minVal + 1;\n\n        vector<int> count(range, 0);\n        for (int x : nums) count[x - minVal]++;\n\n        int idx = 0;\n        for (int i = 0; i < range; i++) {\n            while (count[i]-- > 0) nums[idx++] = i + minVal;\n        }\n        return nums;\n    }\n};"
+        }
+      },
+      {
+        "id": "q_largest_number",
+        "slug": "largest-number",
+        "patternSlug": "sorting-algorithms-custom-comparators",
+        "subPatternId": "sp_sort_specialized",
+        "subPatternSlug": "custom-comparators-string-sorting",
+        "patternId": "p_sorting_algorithms_comparators",
+        "lcNum": "LC 179",
+        "title": "Largest Number",
+        "url": "https://leetcode.com/problems/largest-number/",
+        "diff": "medium",
+        "statement": "Given a list of non-negative integers `nums`, arrange them such that they form the largest number and return it as a string.",
+        "bruteForce": {
+          "explanation": "Try all permutations of numbers in O(N! * N) and take the lexicographically max string.",
+          "timeComp": "O(N! * N)",
+          "spaceComp": "O(N!)",
+          "cppCode": "// Permutation brute force"
+        },
+        "optimal": {
+          "explanation": "Convert numbers to strings and sort using custom comparator: `[](const string& a, const string& b) { return a + b > b + a; }`.",
+          "timeComp": "O(N log N * K)",
+          "spaceComp": "O(N * K)",
+          "cppCode": "class Solution {\npublic:\n    string largestNumber(vector<int>& nums) {\n        vector<string> strs;\n        for (int x : nums) strs.push_back(to_string(x));\n\n        sort(strs.begin(), strs.end(), [](const string& a, const string& b) {\n            return a + b > b + a;\n        });\n\n        if (strs[0] == \"0\") return \"0\";\n\n        string res = \"\";\n        for (const string& s : strs) res += s;\n        return res;\n    }\n};"
+        }
+      }
+    ]
+  },
+  {
     "id": "p_hashing_frequency_counting",
     "name": "Hashing / Frequency Counting",
     "cues": [
@@ -64,6 +542,20 @@ export const PATTERNS_DATA: Pattern[] = [
         "slug": "o-1-pair-complement-lookup",
         "patternSlug": "hashing-frequency-counting",
         "patternId": "p_hashing_frequency_counting"
+      },
+      {
+        "id": "sp_hash_xor",
+        "slug": "prefix-xor-bitwise-hashing",
+        "patternSlug": "hashing-frequency-counting",
+        "patternId": "p_hashing_frequency_counting",
+        "name": "Prefix XOR & Bitwise Hashing",
+        "cues": [
+          "Subarray with given XOR",
+          "Bitwise XOR sum"
+        ],
+        "thinkAbout": "When calculating subarray XOR sum equal to K. Note: xr(L..R) = xr(0..R) ^ xr(0..L-1) = K implies xr(0..L-1) = xr(0..R) ^ K.",
+        "coreIdea": "Maintain running XOR sum `xr`. Lookup count of `xr ^ target` in hash map.",
+        "templateCode": "unordered_map<int, int> mp;\nmp[0] = 1;\nint xr = 0, count = 0;\nfor (int x : nums) {\n    xr ^= x;\n    if (mp.count(xr ^ k)) count += mp[xr ^ k];\n    mp[xr]++;\n}"
       }
     ],
     "questions": [
@@ -166,10 +658,35 @@ export const PATTERNS_DATA: Pattern[] = [
           "spaceComp": "O(N)",
           "cppCode": "class Solution {\npublic:\n    int longestConsecutive(vector<int>& nums) {\n        unordered_set<int> numSet(nums.begin(), nums.end());\n        int longest = 0;\n\n        for (int num : numSet) {\n            // Check if num is start of sequence\n            if (!numSet.count(num - 1)) {\n                int currentNum = num;\n                int currentStreak = 1;\n                while (numSet.count(currentNum + 1)) {\n                    currentNum++;\n                    currentStreak++;\n                }\n                longest = max(longest, currentStreak);\n            }\n        }\n        return longest;\n    }\n};"
         }
+      },
+      {
+        "id": "q_subarray_with_given_xor",
+        "slug": "subarray-with-given-xor",
+        "patternSlug": "hashing-frequency-counting",
+        "subPatternId": "sp_hash_xor",
+        "subPatternSlug": "prefix-xor-bitwise-hashing",
+        "patternId": "p_hashing_frequency_counting",
+        "lcNum": "IB 1",
+        "title": "Subarray with Given XOR",
+        "url": "https://www.interviewbit.com/problems/subarray-with-given-xor/",
+        "diff": "medium",
+        "statement": "Given an array of integers `A` and an integer `B`, find the total number of subarrays having bitwise XOR equal to `B`.",
+        "bruteForce": {
+          "explanation": "Check all subarray pairs (i, j) calculating bitwise XOR in O(N^2).",
+          "timeComp": "O(N^2)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    int solve(vector<int>& A, int B) {\n        int count = 0;\n        for (int i = 0; i < A.size(); i++) {\n            int xr = 0;\n            for (int j = i; j < A.size(); j++) {\n                xr ^= A[j];\n                if (xr == B) count++;\n            }\n        }\n        return count;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Maintain running XOR sum `xr`. Count previous occurrences of `(xr ^ B)` in hash map in O(N) time.",
+          "timeComp": "O(N)",
+          "spaceComp": "O(N)",
+          "cppCode": "class Solution {\npublic:\n    int solve(vector<int>& A, int B) {\n        unordered_map<int, int> mp;\n        mp[0] = 1;\n        int xr = 0, count = 0;\n        for (int x : A) {\n            xr ^= x;\n            if (mp.count(xr ^ B)) count += mp[xr ^ B];\n            mp[xr]++;\n        }\n        return count;\n    }\n};"
+        }
       }
     ],
     "slug": "hashing-frequency-counting",
-    "displayOrder": 1
+    "displayOrder": 3
   },
   {
     "id": "p_prefix_sum_difference_arrays",
@@ -223,6 +740,34 @@ export const PATTERNS_DATA: Pattern[] = [
         "thinkAbout": "When given multiple interval update operations [L, R, val] and asked for final array values in O(N + Q) time.",
         "coreIdea": "Add +val at index L and -val at index R+1. Compute prefix sum at the end.",
         "templateCode": "// Difference Array Template\nvector<int> diff(N + 1, 0);\nfor (auto& op : operations) {\n    diff[L] += val;\n    diff[R + 1] -= val;\n}\nfor (int i = 1; i < N; i++) diff[i] += diff[i-1];"
+      },
+      {
+        "id": "sp_prefix_product",
+        "slug": "prefix-suffix-products",
+        "patternSlug": "prefix-sum-difference-arrays",
+        "patternId": "p_prefix_sum_difference_arrays",
+        "name": "Prefix & Suffix Products",
+        "cues": [
+          "Product of array except self",
+          "No division operator allowed"
+        ],
+        "thinkAbout": "When calculating array products excluding current element without using division operator.",
+        "coreIdea": "Build prefix products from left to right, then multiply by running suffix product from right to left.",
+        "templateCode": "// Prefix Suffix Product Template"
+      },
+      {
+        "id": "sp_prefix_modulo",
+        "slug": "prefix-sum-modulo-arithmetic",
+        "patternSlug": "prefix-sum-difference-arrays",
+        "patternId": "p_prefix_sum_difference_arrays",
+        "name": "Prefix Sum with Modulo Arithmetic",
+        "cues": [
+          "Subarray sum divisible by K",
+          "Continuous subarray sum"
+        ],
+        "thinkAbout": "When checking if subarray sum is divisible by K. Note: (Pref[R] - Pref[L-1]) % K == 0 implies Pref[R] % K == Pref[L-1] % K.",
+        "coreIdea": "Store earliest index of `running_sum % K` in map. Check if index difference >= 2.",
+        "templateCode": "// Modulo Prefix Template"
       }
     ],
     "questions": [
@@ -300,10 +845,60 @@ export const PATTERNS_DATA: Pattern[] = [
           "spaceComp": "O(N)",
           "cppCode": "class Solution {\npublic:\n    vector<int> corpFlightBookings(vector<vector<int>>& bookings, int n) {\n        vector<int> res(n, 0);\n        for (auto& b : bookings) {\n            int first = b[0] - 1;\n            int last = b[1];\n            int seats = b[2];\n            res[first] += seats;\n            if (last < n) res[last] -= seats;\n        }\n        for (int i = 1; i < n; i++) {\n            res[i] += res[i - 1];\n        }\n        return res;\n    }\n};"
         }
+      },
+      {
+        "id": "q_product_of_array_except_self",
+        "slug": "product-of-array-except-self",
+        "patternSlug": "prefix-sum-difference-arrays",
+        "subPatternId": "sp_prefix_product",
+        "subPatternSlug": "prefix-suffix-products",
+        "patternId": "p_prefix_sum_difference_arrays",
+        "lcNum": "LC 238",
+        "title": "Product of Array Except Self",
+        "url": "https://leetcode.com/problems/product-of-array-except-self/",
+        "diff": "medium",
+        "statement": "Given an integer array `nums`, return an array `answer` such that `answer[i]` is equal to the product of all elements of `nums` except `nums[i]` without using division.",
+        "bruteForce": {
+          "explanation": "For each element i, compute product of all elements j != i in O(N^2) time.",
+          "timeComp": "O(N^2)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    vector<int> productExceptSelf(vector<int>& nums) {\n        int n = nums.size();\n        vector<int> res(n, 1);\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < n; j++) {\n                if (i != j) res[i] *= nums[j];\n            }\n        }\n        return res;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Pass 1: Fill answer with prefix products from left. Pass 2: Multiply by running suffix product from right in O(N) time and O(1) space.",
+          "timeComp": "O(N)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    vector<int> productExceptSelf(vector<int>& nums) {\n        int n = nums.size();\n        vector<int> res(n, 1);\n\n        int leftProd = 1;\n        for (int i = 0; i < n; i++) {\n            res[i] = leftProd;\n            leftProd *= nums[i];\n        }\n\n        int rightProd = 1;\n        for (int i = n - 1; i >= 0; i--) {\n            res[i] *= rightProd;\n            rightProd *= nums[i];\n        }\n\n        return res;\n    }\n};"
+        }
+      },
+      {
+        "id": "q_continuous_subarray_sum",
+        "slug": "continuous-subarray-sum",
+        "patternSlug": "prefix-sum-difference-arrays",
+        "subPatternId": "sp_prefix_modulo",
+        "subPatternSlug": "prefix-sum-modulo-arithmetic",
+        "patternId": "p_prefix_sum_difference_arrays",
+        "lcNum": "LC 523",
+        "title": "Continuous Subarray Sum",
+        "url": "https://leetcode.com/problems/continuous-subarray-sum/",
+        "diff": "medium",
+        "statement": "Given an integer array `nums` and an integer `k`, return `true` if `nums` has a good subarray of size at least two whose sum is a multiple of `k`.",
+        "bruteForce": {
+          "explanation": "Check all subarray pairs (i, j) of length >= 2 in O(N^2) time.",
+          "timeComp": "O(N^2)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    bool checkSubarraySum(vector<int>& nums, int k) {\n        for (int i = 0; i < nums.size(); i++) {\n            int sum = nums[i];\n            for (int j = i + 1; j < nums.size(); j++) {\n                sum += nums[j];\n                if (sum % k == 0) return true;\n            }\n        }\n        return false;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Store earliest index of `running_sum % k` in hash map. If remainder was seen previously at index j with (i - j >= 2), return true.",
+          "timeComp": "O(N)",
+          "spaceComp": "O(min(N, K))",
+          "cppCode": "class Solution {\npublic:\n    bool checkSubarraySum(vector<int>& nums, int k) {\n        unordered_map<int, int> mp;\n        mp[0] = -1; // Remainder 0 seen at index -1\n        int sum = 0;\n\n        for (int i = 0; i < nums.size(); i++) {\n            sum += nums[i];\n            int rem = sum % k;\n            if (rem < 0) rem += k; // Handle negative mod\n\n            if (mp.count(rem)) {\n                if (i - mp[rem] >= 2) return true;\n            } else {\n                mp[rem] = i;\n            }\n        }\n        return false;\n    }\n};"
+        }
       }
     ],
     "slug": "prefix-sum-difference-arrays",
-    "displayOrder": 2
+    "displayOrder": 4
   },
   {
     "id": "p_two_pointers",
@@ -344,6 +939,20 @@ export const PATTERNS_DATA: Pattern[] = [
         "slug": "opposite-direction-pointers",
         "patternSlug": "two-pointers",
         "patternId": "p_two_pointers"
+      },
+      {
+        "id": "sp_tp_partitioning",
+        "slug": "partitioning-backward-pointers",
+        "patternSlug": "two-pointers",
+        "patternId": "p_two_pointers",
+        "name": "Partitioning & Backward Pointers",
+        "cues": [
+          "Dutch National Flag 3-way partition",
+          "Merge sorted array backwards"
+        ],
+        "thinkAbout": "When partitioning array elements in-place with 3 boundary pointers or merging arrays from end.",
+        "coreIdea": "Maintain low, mid, high pointers for Dutch National Flag, or write to target array backwards from m+n-1.",
+        "templateCode": "// Dutch National Flag\nint low = 0, mid = 0, high = N - 1;\nwhile (mid <= high) {\n    if (nums[mid] == 0) swap(nums[low++], nums[mid++]);\n    else if (nums[mid] == 1) mid++;\n    else swap(nums[mid], nums[high--]);\n}"
       }
     ],
     "questions": [
@@ -446,10 +1055,60 @@ export const PATTERNS_DATA: Pattern[] = [
           "spaceComp": "O(1)",
           "cppCode": "class Solution {\npublic:\n    int trap(vector<int>& height) {\n        int left = 0, right = height.size() - 1;\n        int maxLeft = 0, maxRight = 0, water = 0;\n\n        while (left < right) {\n            if (height[left] <= height[right]) {\n                if (height[left] >= maxLeft) maxLeft = height[left];\n                else water += maxLeft - height[left];\n                left++;\n            } else {\n                if (height[right] >= maxRight) maxRight = height[right];\n                else water += maxRight - height[right];\n                right--;\n            }\n        }\n        return water;\n    }\n};"
         }
+      },
+      {
+        "id": "q_sort_colors",
+        "slug": "sort-colors",
+        "patternSlug": "two-pointers",
+        "subPatternId": "sp_tp_partitioning",
+        "subPatternSlug": "partitioning-backward-pointers",
+        "patternId": "p_two_pointers",
+        "lcNum": "LC 75",
+        "title": "Sort Colors (Dutch National Flag)",
+        "url": "https://leetcode.com/problems/sort-colors/",
+        "diff": "medium",
+        "statement": "Given an array `nums` with `n` objects colored red (0), white (1), or blue (2), sort them in-place in O(N) single pass.",
+        "bruteForce": {
+          "explanation": "Count 0s, 1s, and 2s in 1st pass, then overwrite array in 2nd pass in O(2N).",
+          "timeComp": "O(2N)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    void sortColors(vector<int>& nums) {\n        int c0 = 0, c1 = 0, c2 = 0;\n        for (int x : nums) {\n            if (x == 0) c0++; else if (x == 1) c1++; else c2++;\n        }\n        int idx = 0;\n        while (c0--) nums[idx++] = 0;\n        while (c1--) nums[idx++] = 1;\n        while (c2--) nums[idx++] = 2;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Dutch National Flag Algorithm using 3 pointers (low, mid, high). Single pass O(N) time and O(1) space.",
+          "timeComp": "O(N)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    void sortColors(vector<int>& nums) {\n        int low = 0, mid = 0, high = nums.size() - 1;\n        while (mid <= high) {\n            if (nums[mid] == 0) {\n                swap(nums[low++], nums[mid++]);\n            } else if (nums[mid] == 1) {\n                mid++;\n            } else {\n                swap(nums[mid], nums[high--]);\n            }\n        }\n    }\n};"
+        }
+      },
+      {
+        "id": "q_merge_sorted_array",
+        "slug": "merge-sorted-array",
+        "patternSlug": "two-pointers",
+        "subPatternId": "sp_tp_partitioning",
+        "subPatternSlug": "partitioning-backward-pointers",
+        "patternId": "p_two_pointers",
+        "lcNum": "LC 88",
+        "title": "Merge Sorted Array",
+        "url": "https://leetcode.com/problems/merge-sorted-array/",
+        "diff": "easy",
+        "statement": "Merge sorted arrays `nums1` and `nums2` into `nums1` as one sorted array in-place.",
+        "bruteForce": {
+          "explanation": "Copy nums2 into empty space of nums1 and call sort() in O((M+N) log(M+N)).",
+          "timeComp": "O((M+N) log(M+N))",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    void merge(vector<int>& nums1, int m, vector<int>& nums2, int n) {\n        for (int i = 0; i < n; i++) nums1[m + i] = nums2[i];\n        sort(nums1.begin(), nums1.end());\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Fill nums1 backwards starting from index `m + n - 1` using two pointers comparing elements from right to left.",
+          "timeComp": "O(M + N)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    void merge(vector<int>& nums1, int m, vector<int>& nums2, int n) {\n        int p1 = m - 1, p2 = n - 1, i = m + n - 1;\n        while (p2 >= 0) {\n            if (p1 >= 0 && nums1[p1] > nums2[p2]) {\n                nums1[i--] = nums1[p1--];\n            } else {\n                nums1[i--] = nums2[p2--];\n            }\n        }\n    }\n};"
+        }
       }
     ],
     "slug": "two-pointers",
-    "displayOrder": 3
+    "displayOrder": 5
   },
   {
     "id": "p_sliding_window",
@@ -502,6 +1161,20 @@ export const PATTERNS_DATA: Pattern[] = [
         "thinkAbout": "When the window size K is explicitly fixed. Add new right element and subtract old left element.",
         "coreIdea": "Maintain window sum or state of size K. Slide right by 1, subtracting nums[i - K] and adding nums[i].",
         "templateCode": "// Fixed Window Template\nfor (int i = 0; i < N; i++) {\n    windowState += nums[i];\n    if (i >= K) windowState -= nums[i - K];\n    if (i >= K - 1) updateAns(windowState);\n}"
+      },
+      {
+        "id": "sp_sw_k_ops",
+        "slug": "variable-window-k-operations-replacement",
+        "patternSlug": "sliding-window",
+        "patternId": "p_sliding_window",
+        "name": "Variable Window with K Operations / Replacement",
+        "cues": [
+          "Max consecutive ones III after flip K zeroes",
+          "Longest repeating character replacement"
+        ],
+        "thinkAbout": "When allowed up to K invalid element flips/replacements inside variable window.",
+        "coreIdea": "Track count of invalid elements or max frequency. Shrink left pointer when `(window_len - max_freq) > K` or `zero_count > K`.",
+        "templateCode": "// K Operations Window Template"
       }
     ],
     "questions": [
@@ -604,10 +1277,60 @@ export const PATTERNS_DATA: Pattern[] = [
           "spaceComp": "O(1)",
           "cppCode": "class Solution {\npublic:\n    string minWindow(string s, string t) {\n        if (s.empty() || t.empty()) return \"\";\n        unordered_map<char, int> targetMap;\n        for (char c : t) targetMap[c]++;\n\n        int required = targetMap.size();\n        int formed = 0;\n        unordered_map<char, int> windowMap;\n\n        int left = 0, minLen = INT_MAX, minStart = 0;\n\n        for (int right = 0; right < s.length(); right++) {\n            char c = s[right];\n            windowMap[c]++;\n            if (targetMap.count(c) && windowMap[c] == targetMap[c]) {\n                formed++;\n            }\n\n            while (left <= right && formed == required) {\n                if (right - left + 1 < minLen) {\n                    minLen = right - left + 1;\n                    minStart = left;\n                }\n\n                char leftChar = s[left];\n                windowMap[leftChar]--;\n                if (targetMap.count(leftChar) && windowMap[leftChar] < targetMap[leftChar]) {\n                    formed--;\n                }\n                left++;\n            }\n        }\n        return minLen == INT_MAX ? \"\" : s.substr(minStart, minLen);\n    }\n};"
         }
+      },
+      {
+        "id": "q_max_consecutive_ones_iii",
+        "slug": "max-consecutive-ones-iii",
+        "patternSlug": "sliding-window",
+        "subPatternId": "sp_sw_k_ops",
+        "subPatternSlug": "variable-window-k-operations-replacement",
+        "patternId": "p_sliding_window",
+        "lcNum": "LC 1004",
+        "title": "Max Consecutive Ones III",
+        "url": "https://leetcode.com/problems/max-consecutive-ones-iii/",
+        "diff": "medium",
+        "statement": "Given a binary array `nums` and an integer `k`, return maximum number of consecutive `1`'s if you can flip at most `k` `0`'s.",
+        "bruteForce": {
+          "explanation": "Check all subarray pairs counting 0s. Take max length with 0-count <= K in O(N^2).",
+          "timeComp": "O(N^2)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    int longestOnes(vector<int>& nums, int k) {\n        int maxLen = 0;\n        for (int i = 0; i < nums.size(); i++) {\n            int zeros = 0;\n            for (int j = i; j < nums.size(); j++) {\n                if (nums[j] == 0) zeros++;\n                if (zeros <= k) maxLen = max(maxLen, j - i + 1);\n                else break;\n            }\n        }\n        return maxLen;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Variable sliding window. Track `zeroCount`. Shrink `left` pointer whenever `zeroCount > k` in O(N) single pass.",
+          "timeComp": "O(N)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    int longestOnes(vector<int>& nums, int k) {\n        int left = 0, zeroCount = 0, maxLen = 0;\n        for (int right = 0; right < nums.size(); right++) {\n            if (nums[right] == 0) zeroCount++;\n            while (zeroCount > k) {\n                if (nums[left] == 0) zeroCount--;\n                left++;\n            }\n            maxLen = max(maxLen, right - left + 1);\n        }\n        return maxLen;\n    }\n};"
+        }
+      },
+      {
+        "id": "q_longest_repeating_character_replacement",
+        "slug": "longest-repeating-character-replacement",
+        "patternSlug": "sliding-window",
+        "subPatternId": "sp_sw_k_ops",
+        "subPatternSlug": "variable-window-k-operations-replacement",
+        "patternId": "p_sliding_window",
+        "lcNum": "LC 424",
+        "title": "Longest Repeating Character Replacement",
+        "url": "https://leetcode.com/problems/longest-repeating-character-replacement/",
+        "diff": "medium",
+        "statement": "Given string `s` and integer `k`, choose any character and change it to any other uppercase English character at most `k` times. Return length of longest substring containing same letter.",
+        "bruteForce": {
+          "explanation": "Test all substrings checking if (length - maxFreq) <= K in O(26 * N^2).",
+          "timeComp": "O(N^2)",
+          "spaceComp": "O(1)",
+          "cppCode": "// Substring brute force"
+        },
+        "optimal": {
+          "explanation": "Sliding window with `maxFreq` tracker. Valid condition: `(right - left + 1) - maxFreq <= k`. Shrink left when invalid.",
+          "timeComp": "O(N)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    int characterReplacement(string s, int k) {\n        vector<int> freq(26, 0);\n        int left = 0, maxFreq = 0, maxLen = 0;\n\n        for (int right = 0; right < s.length(); right++) {\n            freq[s[right] - 'A']++;\n            maxFreq = max(maxFreq, freq[s[right] - 'A']);\n\n            while ((right - left + 1) - maxFreq > k) {\n                freq[s[left] - 'A']--;\n                left++;\n            }\n            maxLen = max(maxLen, right - left + 1);\n        }\n        return maxLen;\n    }\n};"
+        }
       }
     ],
     "slug": "sliding-window",
-    "displayOrder": 4
+    "displayOrder": 6
   },
   {
     "id": "p_binary_search",
@@ -686,6 +1409,20 @@ export const PATTERNS_DATA: Pattern[] = [
         "slug": "binary-search-on-answer",
         "patternSlug": "binary-search",
         "patternId": "p_binary_search"
+      },
+      {
+        "id": "sp_bs_matrix_peak",
+        "slug": "2d-matrix-unsorted-condition-search",
+        "patternSlug": "binary-search",
+        "patternId": "p_binary_search",
+        "name": "2D Matrix & Unsorted Condition Search",
+        "cues": [
+          "Search 2D matrix",
+          "Find peak element"
+        ],
+        "thinkAbout": "When performing binary search on 2D grid flattened virtually, or searching peak on unsorted array.",
+        "coreIdea": "Map 1D mid to 2D cell: `matrix[mid / N][mid % N]`. For peak element, eliminate side where `nums[mid] < nums[mid + 1]`.",
+        "templateCode": "// Virtual 1D Matrix Search\nint low = 0, high = M * N - 1;\nwhile (low <= high) {\n    int mid = low + (high - low) / 2;\n    int val = matrix[mid / N][mid % N];\n    if (val == target) return true;\n    if (val < target) low = mid + 1; else high = mid - 1;\n}"
       }
     ],
     "questions": [
@@ -813,10 +1550,60 @@ export const PATTERNS_DATA: Pattern[] = [
           "spaceComp": "O(1)",
           "cppCode": "class Solution {\npublic:\n    int shipWithinDays(vector<int>& weights, int days) {\n        int low = *max_element(weights.begin(), weights.end());\n        int high = accumulate(weights.begin(), weights.end(), 0);\n        int ans = high;\n\n        while (low <= high) {\n            int mid = low + (high - low) / 2;\n            int neededDays = 1, currentLoad = 0;\n            for (int w : weights) {\n                if (currentLoad + w > mid) {\n                    neededDays++;\n                    currentLoad = 0;\n                }\n                currentLoad += w;\n            }\n\n            if (neededDays <= days) {\n                ans = mid;\n                high = mid - 1; // Try smaller capacity\n            } else {\n                low = mid + 1;  // Need bigger capacity\n            }\n        }\n        return ans;\n    }\n};"
         }
+      },
+      {
+        "id": "q_search_a_2d_matrix",
+        "slug": "search-a-2d-matrix",
+        "patternSlug": "binary-search",
+        "subPatternId": "sp_bs_matrix_peak",
+        "subPatternSlug": "2d-matrix-unsorted-condition-search",
+        "patternId": "p_binary_search",
+        "lcNum": "LC 74",
+        "title": "Search a 2D Matrix",
+        "url": "https://leetcode.com/problems/search-a-2d-matrix/",
+        "diff": "medium",
+        "statement": "Given an `m x n` integer matrix `matrix` where rows are sorted and first integer of row > last of prev row, return `true` if `target` is in matrix.",
+        "bruteForce": {
+          "explanation": "Linear scan through all M x N cells in O(M * N).",
+          "timeComp": "O(M * N)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    bool searchMatrix(vector<vector<int>>& matrix, int target) {\n        for (auto& row : matrix) {\n            for (int x : row) if (x == target) return true;\n        }\n        return false;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Virtual 1D Binary Search treating M x N matrix as array of size M * N using cell mapping `matrix[mid / N][mid % N]` in O(log(M * N)).",
+          "timeComp": "O(log(M * N))",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    bool searchMatrix(vector<vector<int>>& matrix, int target) {\n        if (matrix.empty() || matrix[0].empty()) return false;\n        int m = matrix.size(), n = matrix[0].size();\n        int low = 0, high = m * n - 1;\n\n        while (low <= high) {\n            int mid = low + (high - low) / 2;\n            int val = matrix[mid / n][mid % n];\n            if (val == target) return true;\n            if (val < target) low = mid + 1;\n            else high = mid - 1;\n        }\n        return false;\n    }\n};"
+        }
+      },
+      {
+        "id": "q_find_peak_element",
+        "slug": "find-peak-element",
+        "patternSlug": "binary-search",
+        "subPatternId": "sp_bs_matrix_peak",
+        "subPatternSlug": "2d-matrix-unsorted-condition-search",
+        "patternId": "p_binary_search",
+        "lcNum": "LC 162",
+        "title": "Find Peak Element",
+        "url": "https://leetcode.com/problems/find-peak-element/",
+        "diff": "medium",
+        "statement": "A peak element is an element strictly greater than its neighbors. Given 0-indexed integer array `nums`, find a peak element and return its index in O(log N).",
+        "bruteForce": {
+          "explanation": "Linear scan finding index i where nums[i] > nums[i+1] in O(N).",
+          "timeComp": "O(N)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    int findPeakElement(vector<int>& nums) {\n        for (int i = 0; i < nums.size() - 1; i++) {\n            if (nums[i] > nums[i + 1]) return i;\n        }\n        return nums.size() - 1;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Binary search on unsorted array. If `nums[mid] < nums[mid + 1]`, a peak MUST exist in the right half.",
+          "timeComp": "O(log N)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    int findPeakElement(vector<int>& nums) {\n        int low = 0, high = nums.size() - 1;\n        while (low < high) {\n            int mid = low + (high - low) / 2;\n            if (nums[mid] < nums[mid + 1]) low = mid + 1;\n            else high = mid;\n        }\n        return low;\n    }\n};"
+        }
       }
     ],
     "slug": "binary-search",
-    "displayOrder": 5
+    "displayOrder": 7
   },
   {
     "id": "p_overlapping_intervals",
@@ -935,7 +1722,7 @@ export const PATTERNS_DATA: Pattern[] = [
       }
     ],
     "slug": "overlapping-intervals",
-    "displayOrder": 6
+    "displayOrder": 8
   },
   {
     "id": "p_fast_slow_pointers_linked_list",
@@ -1053,7 +1840,7 @@ export const PATTERNS_DATA: Pattern[] = [
       }
     ],
     "slug": "fast-slow-pointers-linked-list",
-    "displayOrder": 7
+    "displayOrder": 9
   },
   {
     "id": "p_monotonic_stack",
@@ -1167,7 +1954,7 @@ export const PATTERNS_DATA: Pattern[] = [
       }
     ],
     "slug": "monotonic-stack",
-    "displayOrder": 8
+    "displayOrder": 10
   },
   {
     "id": "p_heap_priority_queue",
@@ -1236,7 +2023,7 @@ export const PATTERNS_DATA: Pattern[] = [
       }
     ],
     "slug": "heap-priority-queue",
-    "displayOrder": 9
+    "displayOrder": 11
   },
   {
     "id": "p_tree_dfs_depth_first_search",
@@ -1305,7 +2092,7 @@ export const PATTERNS_DATA: Pattern[] = [
       }
     ],
     "slug": "tree-dfs-depth-first-search",
-    "displayOrder": 10
+    "displayOrder": 12
   },
   {
     "id": "p_tree_bfs_level_order_traversal",
@@ -1374,7 +2161,7 @@ export const PATTERNS_DATA: Pattern[] = [
       }
     ],
     "slug": "tree-bfs-level-order-traversal",
-    "displayOrder": 11
+    "displayOrder": 13
   },
   {
     "id": "p_binary_search_tree_bst",
@@ -1443,7 +2230,7 @@ export const PATTERNS_DATA: Pattern[] = [
       }
     ],
     "slug": "binary-search-tree-bst",
-    "displayOrder": 12
+    "displayOrder": 14
   },
   {
     "id": "p_backtracking_subsets_permutations",
@@ -1512,7 +2299,7 @@ export const PATTERNS_DATA: Pattern[] = [
       }
     ],
     "slug": "backtracking-subsets-permutations",
-    "displayOrder": 13
+    "displayOrder": 15
   },
   {
     "id": "p_graph_dfs_bfs",
@@ -1581,7 +2368,7 @@ export const PATTERNS_DATA: Pattern[] = [
       }
     ],
     "slug": "graph-dfs-bfs",
-    "displayOrder": 14
+    "displayOrder": 16
   },
   {
     "id": "p_topological_sort_kahn_s_algorithm",
@@ -1650,7 +2437,7 @@ export const PATTERNS_DATA: Pattern[] = [
       }
     ],
     "slug": "topological-sort-kahn-s-algorithm",
-    "displayOrder": 15
+    "displayOrder": 17
   },
   {
     "id": "p_disjoint_set_union_dsu_union_find",
@@ -1719,7 +2506,7 @@ export const PATTERNS_DATA: Pattern[] = [
       }
     ],
     "slug": "disjoint-set-union-dsu-union-find",
-    "displayOrder": 16
+    "displayOrder": 18
   },
   {
     "id": "p_1d_dynamic_programming",
@@ -1788,7 +2575,7 @@ export const PATTERNS_DATA: Pattern[] = [
       }
     ],
     "slug": "1d-dynamic-programming",
-    "displayOrder": 17
+    "displayOrder": 19
   },
   {
     "id": "p_knapsack_2d_dynamic_programming",
@@ -1857,7 +2644,7 @@ export const PATTERNS_DATA: Pattern[] = [
       }
     ],
     "slug": "knapsack-2d-dynamic-programming",
-    "displayOrder": 18
+    "displayOrder": 20
   },
   {
     "id": "p_bit_manipulation_bitmasking",
@@ -1926,6 +2713,6 @@ export const PATTERNS_DATA: Pattern[] = [
       }
     ],
     "slug": "bit-manipulation-bitmasking",
-    "displayOrder": 19
+    "displayOrder": 21
   }
 ];
