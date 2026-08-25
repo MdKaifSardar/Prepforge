@@ -9,6 +9,7 @@ import { User, LogOut, LayoutDashboard, ShieldCheck, ChevronDown, Sparkles } fro
 export function UserAvatarMenu() {
   const { user, userProfile, logout, loading } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -62,8 +63,14 @@ export function UserAvatarMenu() {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 rounded-full border border-zinc-200 bg-white p-1 pr-2.5 transition-all hover:border-indigo-500/50 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900"
       >
-        {photoURL ? (
-          <img src={photoURL} alt={displayName} className="h-7 w-7 rounded-full object-cover" />
+        {photoURL && !imgError ? (
+          <img
+            src={photoURL}
+            alt={displayName}
+            referrerPolicy="no-referrer"
+            onError={() => setImgError(true)}
+            className="h-7 w-7 rounded-full object-cover"
+          />
         ) : (
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-[11px] font-bold text-white">
             {displayName.charAt(0).toUpperCase()}
@@ -85,7 +92,7 @@ export function UserAvatarMenu() {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-2xl border border-zinc-200 bg-white p-1.5 shadow-2xl backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-2xl border border-zinc-200 bg-white p-1.5 shadow-2xl backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-900 z-50">
           <div className="border-b border-zinc-100 px-3 py-2.5 dark:border-zinc-800">
             <p className="truncate text-xs font-bold text-zinc-900 dark:text-white">{displayName}</p>
             <p className="truncate text-[11px] text-zinc-500 dark:text-zinc-400">{user.email}</p>

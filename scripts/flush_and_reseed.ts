@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, setDoc, collection, getDocs, deleteDoc } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, deleteDoc, doc, setDoc } from 'firebase/firestore';
 import { PATTERNS_DATA } from '../src/lib/data/dsa-patterns';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -30,20 +30,25 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 async function wipeCollection(collName: string) {
+  console.log(`Wiping old stale documents from collection "${collName}"...`);
   const snap = await getDocs(collection(db, collName));
+  let count = 0;
   for (const d of snap.docs) {
     await deleteDoc(doc(db, collName, d.id));
+    count++;
   }
+  console.log(`Deleted ${count} old documents from "${collName}".`);
 }
 
-async function seed() {
-  console.log(`Starting Clean Firestore seeding into project: ${firebaseConfig.projectId}...`);
-  
-  // Wipe old stale documents first
+async function flushAndReseed() {
+  console.log(`=== FIRESTORE CLEANUP & RE-SEEDING (${firebaseConfig.projectId}) ===\n`);
+
+  // 1. Wipe all old/duplicate documents
   await wipeCollection('patterns');
   await wipeCollection('sub_patterns');
   await wipeCollection('questions');
 
+  console.log('\n--- Seeding Fresh Canonical Data ---');
   let totalPatterns = 0;
   let totalSubPatterns = 0;
   let totalQuestions = 0;
@@ -51,7 +56,7 @@ async function seed() {
   for (const pattern of PATTERNS_DATA) {
     const questionCount = pattern.questions ? pattern.questions.length : 0;
     const patternDocId = String(pattern.id);
-    
+
     // 1. Upload Sub-patterns
     if (pattern.subPatterns && pattern.subPatterns.length > 0) {
       for (const sub of pattern.subPatterns) {
@@ -82,10 +87,10 @@ async function seed() {
       }
     }
 
-    // 3. Upload Pattern (Lightweight document without giant embedded questions array)
+    // 3. Upload Pattern Metadata
     const { questions, ...patternMeta } = pattern;
-    const patternDocRef = doc(db, 'patternDocId', patternDocId);
-    await setDoc(doc(db, 'patterns', patternDocId), {
+    const patternDocRef = doc(db, 'patterns', patternDocId);
+    await setDoc(patternDocRef, {
       ...patternMeta,
       id: patternDocId,
       domainId: 'dsa',
@@ -96,11 +101,11 @@ async function seed() {
     console.log(`Uploaded Pattern [${patternDocId}]: ${pattern.name} (${pattern.subPatterns?.length || 0} sub-patterns, ${questionCount} questions)`);
   }
 
-  console.log(`SUCCESS: Seeded ${totalPatterns} patterns, ${totalSubPatterns} sub-patterns, and ${totalQuestions} questions into Firestore!`);
+  console.log(`\nSUCCESS: Cleaned and Seeded ${totalPatterns} patterns, ${totalSubPatterns} sub-patterns, and ${totalQuestions} questions into Firestore!`);
   process.exit(0);
 }
 
-seed().catch(err => {
-  console.error('Seeding failed:', err);
+flushAndReseed().catch(err => {
+  console.error('Flush and reseed failed:', err);
   process.exit(1);
 });

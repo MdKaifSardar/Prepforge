@@ -116,6 +116,56 @@ export const PATTERNS_DATA: Pattern[] = [
         "patternSlug": "hashing-frequency-counting",
         "subPatternSlug": "frequency-counting-anagrams",
         "patternId": "p_hashing_frequency_counting"
+      },
+      {
+        "id": "q_group_anagrams",
+        "lcNum": "LC 49",
+        "title": "Group Anagrams",
+        "slug": "group-anagrams",
+        "diff": "medium",
+        "url": "https://leetcode.com/problems/group-anagrams/",
+        "patternId": "p_hashing_frequency_counting",
+        "patternSlug": "hashing-frequency-counting",
+        "subPatternId": "sp_hash_frequency",
+        "subPatternSlug": "frequency-counting-anagrams",
+        "statement": "Given an array of strings `strs`, group the anagrams together. You can return the answer in any order.",
+        "bruteForce": {
+          "explanation": "For each string, sort its characters to form a canonical key in O(K log K) time, then store in hash map.",
+          "timeComp": "O(N * K log K)",
+          "spaceComp": "O(N * K)",
+          "cppCode": "class Solution {\npublic:\n    vector<vector<string>> groupAnagrams(vector<string>& strs) {\n        unordered_map<string, vector<string>> mp;\n        for (string s : strs) {\n            string key = s;\n            sort(key.begin(), key.end());\n            mp[key].push_back(s);\n        }\n        vector<vector<string>> ans;\n        for (auto& p : mp) ans.push_back(p.second);\n        return ans;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Encode character frequencies into a 26-char string or array key in O(K) time per string instead of sorting.",
+          "timeComp": "O(N * K)",
+          "spaceComp": "O(N * K)",
+          "cppCode": "class Solution {\npublic:\n    vector<vector<string>> groupAnagrams(vector<string>& strs) {\n        unordered_map<string, vector<string>> mp;\n        for (const string& s : strs) {\n            int count[26] = {0};\n            for (char c : s) count[c - 'a']++;\n            string key = \"\";\n            for (int i = 0; i < 26; i++) {\n                key += \"#\" + to_string(count[i]);\n            }\n            mp[key].push_back(s);\n        }\n        vector<vector<string>> ans;\n        for (auto& p : mp) ans.push_back(p.second);\n        return ans;\n    }\n};"
+        }
+      },
+      {
+        "id": "q_longest_consecutive_sequence",
+        "lcNum": "LC 128",
+        "title": "Longest Consecutive Sequence",
+        "slug": "longest-consecutive-sequence",
+        "diff": "medium",
+        "url": "https://leetcode.com/problems/longest-consecutive-sequence/",
+        "patternId": "p_hashing_frequency_counting",
+        "patternSlug": "hashing-frequency-counting",
+        "subPatternId": "sp_hash_lookup",
+        "subPatternSlug": "o-1-pair-complement-lookup",
+        "statement": "Given an unsorted array of integers `nums`, return the length of the longest consecutive elements sequence in O(N) time.",
+        "bruteForce": {
+          "explanation": "Sort array first in O(N log N), then iterate to find longest consecutive duplicate-filtered sequence.",
+          "timeComp": "O(N log N)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    int longestConsecutive(vector<int>& nums) {\n        if (nums.empty()) return 0;\n        sort(nums.begin(), nums.end());\n        int longest = 1, current = 1;\n        for (int i = 1; i < nums.size(); i++) {\n            if (nums[i] != nums[i-1]) {\n                if (nums[i] == nums[i-1] + 1) current++;\n                else { longest = max(longest, current); current = 1; }\n            }\n        }\n        return max(longest, current);\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Insert all numbers into unordered_set. Only start counting sequence if `(num - 1)` does not exist in set (ensuring sequence start).",
+          "timeComp": "O(N)",
+          "spaceComp": "O(N)",
+          "cppCode": "class Solution {\npublic:\n    int longestConsecutive(vector<int>& nums) {\n        unordered_set<int> numSet(nums.begin(), nums.end());\n        int longest = 0;\n\n        for (int num : numSet) {\n            // Check if num is start of sequence\n            if (!numSet.count(num - 1)) {\n                int currentNum = num;\n                int currentStreak = 1;\n                while (numSet.count(currentNum + 1)) {\n                    currentNum++;\n                    currentStreak++;\n                }\n                longest = max(longest, currentStreak);\n            }\n        }\n        return longest;\n    }\n};"
+        }
       }
     ],
     "slug": "hashing-frequency-counting",
@@ -159,6 +209,20 @@ export const PATTERNS_DATA: Pattern[] = [
         "slug": "standard-prefix-sum-subarray-sum-k",
         "patternSlug": "prefix-sum-difference-arrays",
         "patternId": "p_prefix_sum_difference_arrays"
+      },
+      {
+        "id": "sp_prefix_diff",
+        "name": "Difference Array & Range Updates",
+        "slug": "difference-array-range-updates",
+        "patternSlug": "prefix-sum-difference-arrays",
+        "patternId": "p_prefix_sum_difference_arrays",
+        "cues": [
+          "Multiple range updates +val to [L, R]",
+          "Final array state query"
+        ],
+        "thinkAbout": "When given multiple interval update operations [L, R, val] and asked for final array values in O(N + Q) time.",
+        "coreIdea": "Add +val at index L and -val at index R+1. Compute prefix sum at the end.",
+        "templateCode": "// Difference Array Template\nvector<int> diff(N + 1, 0);\nfor (auto& op : operations) {\n    diff[L] += val;\n    diff[R + 1] -= val;\n}\nfor (int i = 1; i < N; i++) diff[i] += diff[i-1];"
       }
     ],
     "questions": [
@@ -186,6 +250,56 @@ export const PATTERNS_DATA: Pattern[] = [
         "patternSlug": "prefix-sum-difference-arrays",
         "subPatternSlug": "standard-prefix-sum-subarray-sum-k",
         "patternId": "p_prefix_sum_difference_arrays"
+      },
+      {
+        "id": "q_contiguous_array",
+        "lcNum": "LC 525",
+        "title": "Contiguous Array",
+        "slug": "contiguous-array",
+        "diff": "medium",
+        "url": "https://leetcode.com/problems/contiguous-array/",
+        "patternId": "p_prefix_sum_difference_arrays",
+        "patternSlug": "prefix-sum-difference-arrays",
+        "subPatternId": "sp_prefix_basic",
+        "subPatternSlug": "standard-prefix-sum-subarray-sum-k",
+        "statement": "Given a binary array `nums`, return the maximum length of a contiguous subarray with an equal number of 0 and 1.",
+        "bruteForce": {
+          "explanation": "Check all subarray pairs (i, j) counting 0s and 1s in O(N^2) time.",
+          "timeComp": "O(N^2)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    int findMaxLength(vector<int>& nums) {\n        int maxLen = 0;\n        for (int i = 0; i < nums.size(); i++) {\n            int zeros = 0, ones = 0;\n            for (int j = i; j < nums.size(); j++) {\n                if (nums[j] == 0) zeros++; else ones++;\n                if (zeros == ones) maxLen = max(maxLen, j - i + 1);\n            }\n        }\n        return maxLen;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Treat 0 as -1. The problem transforms into finding the longest subarray with sum 0 using Prefix Sum + Map.",
+          "timeComp": "O(N)",
+          "spaceComp": "O(N)",
+          "cppCode": "class Solution {\npublic:\n    int findMaxLength(vector<int>& nums) {\n        unordered_map<int, int> mp;\n        mp[0] = -1; // Base case for 0 prefix sum at index -1\n        int sum = 0, maxLen = 0;\n\n        for (int i = 0; i < nums.size(); i++) {\n            sum += (nums[i] == 1) ? 1 : -1;\n            if (mp.count(sum)) {\n                maxLen = max(maxLen, i - mp[sum]);\n            } else {\n                mp[sum] = i;\n            }\n        }\n        return maxLen;\n    }\n};"
+        }
+      },
+      {
+        "id": "q_corporate_flight_bookings",
+        "lcNum": "LC 1109",
+        "title": "Corporate Flight Bookings",
+        "slug": "corporate-flight-bookings",
+        "diff": "medium",
+        "url": "https://leetcode.com/problems/corporate-flight-bookings/",
+        "patternId": "p_prefix_sum_difference_arrays",
+        "patternSlug": "prefix-sum-difference-arrays",
+        "subPatternId": "sp_prefix_diff",
+        "subPatternSlug": "difference-array-range-updates",
+        "statement": "There are `n` flights labeled 1 to `n`. Given `bookings` where `bookings[i] = [first, last, seats]`, return total seats per flight.",
+        "bruteForce": {
+          "explanation": "Iterate over each booking and increment seats for flights in range [first, last].",
+          "timeComp": "O(N * B)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    vector<int> corpFlightBookings(vector<vector<int>>& bookings, int n) {\n        vector<int> res(n, 0);\n        for (auto& b : bookings) {\n            for (int i = b[0] - 1; i <= b[1] - 1; i++) {\n                res[i] += b[2];\n            }\n        }\n        return res;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Use Difference Array. Increment diff[first - 1] by seats and decrement diff[last] by seats. Compute prefix sum.",
+          "timeComp": "O(N + B)",
+          "spaceComp": "O(N)",
+          "cppCode": "class Solution {\npublic:\n    vector<int> corpFlightBookings(vector<vector<int>>& bookings, int n) {\n        vector<int> res(n, 0);\n        for (auto& b : bookings) {\n            int first = b[0] - 1;\n            int last = b[1];\n            int seats = b[2];\n            res[first] += seats;\n            if (last < n) res[last] -= seats;\n        }\n        for (int i = 1; i < n; i++) {\n            res[i] += res[i - 1];\n        }\n        return res;\n    }\n};"
+        }
       }
     ],
     "slug": "prefix-sum-difference-arrays",
@@ -257,6 +371,81 @@ export const PATTERNS_DATA: Pattern[] = [
         "patternSlug": "two-pointers",
         "subPatternSlug": "opposite-direction-pointers",
         "patternId": "p_two_pointers"
+      },
+      {
+        "id": "q_3sum",
+        "lcNum": "LC 15",
+        "title": "3Sum",
+        "slug": "3sum",
+        "diff": "medium",
+        "url": "https://leetcode.com/problems/3sum/",
+        "patternId": "p_two_pointers",
+        "patternSlug": "two-pointers",
+        "subPatternId": "sp_tp_opposite",
+        "subPatternSlug": "opposite-direction-pointers",
+        "statement": "Given an integer array `nums`, return all unique triplets `[nums[i], nums[j], nums[k]]` such that `i != j != k` and sum equals 0.",
+        "bruteForce": {
+          "explanation": "Use 3 nested loops to test all triplets in O(N^3) time, using set for uniqueness.",
+          "timeComp": "O(N^3 log U)",
+          "spaceComp": "O(U)",
+          "cppCode": "class Solution {\npublic:\n    vector<vector<int>> threeSum(vector<int>& nums) {\n        set<vector<int>> st;\n        int n = nums.size();\n        for (int i = 0; i < n; i++) {\n            for (int j = i + 1; j < n; j++) {\n                for (int k = j + 1; k < n; k++) {\n                    if (nums[i] + nums[j] + nums[k] == 0) {\n                        vector<int> temp = {nums[i], nums[j], nums[k]};\n                        sort(temp.begin(), temp.end());\n                        st.insert(temp);\n                    }\n                }\n            }\n        }\n        return vector<vector<int>>(st.begin(), st.end());\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Sort array. Fix first element i. Use two pointers (left = i+1, right = n-1) to find sum == -nums[i]. Skip duplicates.",
+          "timeComp": "O(N^2)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    vector<vector<int>> threeSum(vector<int>& nums) {\n        vector<vector<int>> res;\n        sort(nums.begin(), nums.end());\n        int n = nums.size();\n\n        for (int i = 0; i < n - 2; i++) {\n            if (i > 0 && nums[i] == nums[i - 1]) continue; // Skip duplicate i\n\n            int left = i + 1, right = n - 1;\n            while (left < right) {\n                int sum = nums[i] + nums[left] + nums[right];\n                if (sum == 0) {\n                    res.push_back({nums[i], nums[left], nums[right]});\n                    while (left < right && nums[left] == nums[left + 1]) left++; // Skip duplicate left\n                    while (left < right && nums[right] == nums[right - 1]) right--; // Skip duplicate right\n                    left++; right--;\n                } else if (sum < 0) left++;\n                else right--;\n            }\n        }\n        return res;\n    }\n};"
+        }
+      },
+      {
+        "id": "q_container_with_most_water",
+        "lcNum": "LC 11",
+        "title": "Container With Most Water",
+        "slug": "container-with-most-water",
+        "diff": "medium",
+        "url": "https://leetcode.com/problems/container-with-most-water/",
+        "patternId": "p_two_pointers",
+        "patternSlug": "two-pointers",
+        "subPatternId": "sp_tp_opposite",
+        "subPatternSlug": "opposite-direction-pointers",
+        "statement": "Given `height` array of size `n`, find two lines that together with the x-axis form a container containing the most water.",
+        "bruteForce": {
+          "explanation": "Test all line pairs (i, j) calculating area = min(height[i], height[j]) * (j - i).",
+          "timeComp": "O(N^2)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    int maxArea(vector<int>& height) {\n        int maxW = 0;\n        for (int i = 0; i < height.size(); i++) {\n            for (int j = i + 1; j < height.size(); j++) {\n                int area = min(height[i], height[j]) * (j - i);\n                maxW = max(maxW, area);\n            }\n        }\n        return maxW;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Start two pointers at ends (left=0, right=n-1). Move the pointer with smaller height inward to potentially find a taller line.",
+          "timeComp": "O(N)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    int maxArea(vector<int>& height) {\n        int left = 0, right = height.size() - 1;\n        int maxW = 0;\n\n        while (left < right) {\n            int w = right - left;\n            int h = min(height[left], height[right]);\n            maxW = max(maxW, w * h);\n\n            if (height[left] < height[right]) left++;\n            else right--;\n        }\n        return maxW;\n    }\n};"
+        }
+      },
+      {
+        "id": "q_trapping_rain_water",
+        "lcNum": "LC 42",
+        "title": "Trapping Rain Water",
+        "slug": "trapping-rain-water",
+        "diff": "hard",
+        "url": "https://leetcode.com/problems/trapping-rain-water/",
+        "patternId": "p_two_pointers",
+        "patternSlug": "two-pointers",
+        "subPatternId": "sp_tp_opposite",
+        "subPatternSlug": "opposite-direction-pointers",
+        "statement": "Given `n` non-negative integers representing an elevation map where width of each bar is 1, compute how much water it can trap after raining.",
+        "bruteForce": {
+          "explanation": "For each bar i, find max left height and max right height in O(N), trapping min(leftMax, rightMax) - height[i].",
+          "timeComp": "O(N^2)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    int trap(vector<int>& height) {\n        int n = height.size(), water = 0;\n        for (int i = 0; i < n; i++) {\n            int leftMax = 0, rightMax = 0;\n            for (int j = i; j >= 0; j--) leftMax = max(leftMax, height[j]);\n            for (int j = i; j < n; j++) rightMax = max(rightMax, height[j]);\n            water += min(leftMax, rightMax) - height[i];\n        }\n        return water;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Use two pointers (left, right) with maxLeft and maxRight. Move pointer pointing to smaller boundary height.",
+          "timeComp": "O(N)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    int trap(vector<int>& height) {\n        int left = 0, right = height.size() - 1;\n        int maxLeft = 0, maxRight = 0, water = 0;\n\n        while (left < right) {\n            if (height[left] <= height[right]) {\n                if (height[left] >= maxLeft) maxLeft = height[left];\n                else water += maxLeft - height[left];\n                left++;\n            } else {\n                if (height[right] >= maxRight) maxRight = height[right];\n                else water += maxRight - height[right];\n                right--;\n            }\n        }\n        return water;\n    }\n};"
+        }
       }
     ],
     "slug": "two-pointers",
@@ -299,6 +488,20 @@ export const PATTERNS_DATA: Pattern[] = [
         "slug": "variable-length-sliding-window",
         "patternSlug": "sliding-window",
         "patternId": "p_sliding_window"
+      },
+      {
+        "id": "sp_sw_fixed",
+        "name": "Fixed-Size Sliding Window",
+        "slug": "fixed-size-sliding-window",
+        "patternSlug": "sliding-window",
+        "patternId": "p_sliding_window",
+        "cues": [
+          "Window size K is fixed",
+          "Subarray of size K with max sum / property"
+        ],
+        "thinkAbout": "When the window size K is explicitly fixed. Add new right element and subtract old left element.",
+        "coreIdea": "Maintain window sum or state of size K. Slide right by 1, subtracting nums[i - K] and adding nums[i].",
+        "templateCode": "// Fixed Window Template\nfor (int i = 0; i < N; i++) {\n    windowState += nums[i];\n    if (i >= K) windowState -= nums[i - K];\n    if (i >= K - 1) updateAns(windowState);\n}"
       }
     ],
     "questions": [
@@ -326,6 +529,81 @@ export const PATTERNS_DATA: Pattern[] = [
         "patternSlug": "sliding-window",
         "subPatternSlug": "variable-length-sliding-window",
         "patternId": "p_sliding_window"
+      },
+      {
+        "id": "q_minimum_size_subarray_sum",
+        "lcNum": "LC 209",
+        "title": "Minimum Size Subarray Sum",
+        "slug": "minimum-size-subarray-sum",
+        "diff": "medium",
+        "url": "https://leetcode.com/problems/minimum-size-subarray-sum/",
+        "patternId": "p_sliding_window",
+        "patternSlug": "sliding-window",
+        "subPatternId": "sp_sw_variable",
+        "subPatternSlug": "variable-length-sliding-window",
+        "statement": "Given an array of positive integers `nums` and a positive integer `target`, return the minimal length of a subarray whose sum is $\\ge target$.",
+        "bruteForce": {
+          "explanation": "Check all subarray pairs (i, j) in O(N^2) time to find minimal valid length.",
+          "timeComp": "O(N^2)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    int minSubArrayLen(int target, vector<int>& nums) {\n        int minLen = INT_MAX;\n        for (int i = 0; i < nums.size(); i++) {\n            int sum = 0;\n            for (int j = i; j < nums.size(); j++) {\n                sum += nums[j];\n                if (sum >= target) {\n                    minLen = min(minLen, j - i + 1);\n                    break;\n                }\n            }\n        }\n        return minLen == INT_MAX ? 0 : minLen;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Use variable sliding window. Expand right pointer to build sum. Shrink left pointer while sum >= target.",
+          "timeComp": "O(N)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    int minSubArrayLen(int target, vector<int>& nums) {\n        int left = 0, sum = 0, minLen = INT_MAX;\n\n        for (int right = 0; right < nums.size(); right++) {\n            sum += nums[right];\n            while (sum >= target) {\n                minLen = min(minLen, right - left + 1);\n                sum -= nums[left++];\n            }\n        }\n        return minLen == INT_MAX ? 0 : minLen;\n    }\n};"
+        }
+      },
+      {
+        "id": "q_find_all_anagrams_in_a_string",
+        "lcNum": "LC 438",
+        "title": "Find All Anagrams in a String",
+        "slug": "find-all-anagrams-in-a-string",
+        "diff": "medium",
+        "url": "https://leetcode.com/problems/find-all-anagrams-in-a-string/",
+        "patternId": "p_sliding_window",
+        "patternSlug": "sliding-window",
+        "subPatternId": "sp_sw_fixed",
+        "subPatternSlug": "fixed-size-sliding-window",
+        "statement": "Given two strings `s` and `p`, return an array of all the start indices of `p`'s anagrams in `s`.",
+        "bruteForce": {
+          "explanation": "Extract every substring of length |p| in s and sort it to match p in O(N * K log K).",
+          "timeComp": "O(N * K log K)",
+          "spaceComp": "O(K)",
+          "cppCode": "class Solution {\npublic:\n    vector<int> findAnagrams(string s, string p) {\n        vector<int> ans;\n        int n = s.length(), m = p.length();\n        if (n < m) return ans;\n        string pSorted = p;\n        sort(pSorted.begin(), pSorted.end());\n\n        for (int i = 0; i <= n - m; i++) {\n            string sub = s.substr(i, m);\n            sort(sub.begin(), sub.end());\n            if (sub == pSorted) ans.push_back(i);\n        }\n        return ans;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Maintain a fixed sliding window of size |p| using a frequency array of size 26.",
+          "timeComp": "O(N)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    vector<int> findAnagrams(string s, string p) {\n        vector<int> ans;\n        if (s.length() < p.length()) return ans;\n\n        vector<int> pFreq(26, 0), sFreq(26, 0);\n        int m = p.length();\n        for (int i = 0; i < m; i++) {\n            pFreq[p[i] - 'a']++;\n            sFreq[s[i] - 'a']++;\n        }\n\n        if (pFreq == sFreq) ans.push_back(0);\n\n        for (int i = m; i < s.length(); i++) {\n            sFreq[s[i] - 'a']++;\n            sFreq[s[i - m] - 'a']--;\n            if (pFreq == sFreq) ans.push_back(i - m + 1);\n        }\n        return ans;\n    }\n};"
+        }
+      },
+      {
+        "id": "q_minimum_window_substring",
+        "lcNum": "LC 76",
+        "title": "Minimum Window Substring",
+        "slug": "minimum-window-substring",
+        "diff": "hard",
+        "url": "https://leetcode.com/problems/minimum-window-substring/",
+        "patternId": "p_sliding_window",
+        "patternSlug": "sliding-window",
+        "subPatternId": "sp_sw_variable",
+        "subPatternSlug": "variable-length-sliding-window",
+        "statement": "Given two strings `s` and `t`, return the minimum window substring of `s` such that every character in `t` (including duplicates) is included.",
+        "bruteForce": {
+          "explanation": "Check all possible substrings of s and verify if t's character frequency requirement is satisfied.",
+          "timeComp": "O(N^2 * K)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    string minWindow(string s, string t) {\n        int n = s.length();\n        string minStr = \"\";\n        int minLen = INT_MAX;\n\n        for (int i = 0; i < n; i++) {\n            for (int j = i; j < n; j++) {\n                string sub = s.substr(i, j - i + 1);\n                unordered_map<char, int> mp;\n                for (char c : sub) mp[c]++;\n                bool valid = true;\n                for (char c : t) {\n                    if (--mp[c] < 0) { valid = false; break; }\n                }\n                if (valid && sub.length() < minLen) {\n                    minLen = sub.length();\n                    minStr = sub;\n                }\n            }\n        }\n        return minStr;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Variable Sliding Window with `required` match counter. Expand right pointer to meet counts, shrink left pointer to minimize window.",
+          "timeComp": "O(N)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    string minWindow(string s, string t) {\n        if (s.empty() || t.empty()) return \"\";\n        unordered_map<char, int> targetMap;\n        for (char c : t) targetMap[c]++;\n\n        int required = targetMap.size();\n        int formed = 0;\n        unordered_map<char, int> windowMap;\n\n        int left = 0, minLen = INT_MAX, minStart = 0;\n\n        for (int right = 0; right < s.length(); right++) {\n            char c = s[right];\n            windowMap[c]++;\n            if (targetMap.count(c) && windowMap[c] == targetMap[c]) {\n                formed++;\n            }\n\n            while (left <= right && formed == required) {\n                if (right - left + 1 < minLen) {\n                    minLen = right - left + 1;\n                    minStart = left;\n                }\n\n                char leftChar = s[left];\n                windowMap[leftChar]--;\n                if (targetMap.count(leftChar) && windowMap[leftChar] < targetMap[leftChar]) {\n                    formed--;\n                }\n                left++;\n            }\n        }\n        return minLen == INT_MAX ? \"\" : s.substr(minStart, minLen);\n    }\n};"
+        }
       }
     ],
     "slug": "sliding-window",
@@ -485,6 +763,56 @@ export const PATTERNS_DATA: Pattern[] = [
         "patternSlug": "binary-search",
         "subPatternSlug": "binary-search-on-answer",
         "patternId": "p_binary_search"
+      },
+      {
+        "id": "q_find_minimum_in_rotated_sorted_array",
+        "lcNum": "LC 153",
+        "title": "Find Minimum in Rotated Sorted Array",
+        "slug": "find-minimum-in-rotated-sorted-array",
+        "diff": "medium",
+        "url": "https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/",
+        "patternId": "p_binary_search",
+        "patternSlug": "binary-search",
+        "subPatternId": "sp_bs_rotated",
+        "subPatternSlug": "rotated-modified-array-search",
+        "statement": "Given a rotated sorted array `nums` of unique elements, return the minimum element of this array in O(log N) time.",
+        "bruteForce": {
+          "explanation": "Linear scan through the array in O(N) to find minimum element.",
+          "timeComp": "O(N)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    int findMin(vector<int>& nums) {\n        int mn = nums[0];\n        for (int x : nums) mn = min(mn, x);\n        return mn;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Binary search comparing `nums[mid]` with `nums[high]`. If `nums[mid] > nums[high]`, minimum lies in right half.",
+          "timeComp": "O(log N)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    int findMin(vector<int>& nums) {\n        int low = 0, high = nums.size() - 1;\n        while (low < high) {\n            int mid = low + (high - low) / 2;\n            if (nums[mid] > nums[high]) low = mid + 1;\n            else high = mid;\n        }\n        return nums[low];\n    }\n};"
+        }
+      },
+      {
+        "id": "q_capacity_to_ship_packages_within_d_days",
+        "lcNum": "LC 1011",
+        "title": "Capacity To Ship Packages Within D Days",
+        "slug": "capacity-to-ship-packages-within-d-days",
+        "diff": "medium",
+        "url": "https://leetcode.com/problems/capacity-to-ship-packages-within-d-days/",
+        "patternId": "p_binary_search",
+        "patternSlug": "binary-search",
+        "subPatternId": "sp_bs_on_answer",
+        "subPatternSlug": "binary-search-on-answer-space",
+        "statement": "Given package weights and days `D`, find the minimum ship capacity to convey all packages within `D` days.",
+        "bruteForce": {
+          "explanation": "Linear search ship capacities starting from max(weights) up to sum(weights).",
+          "timeComp": "O(sum(weights) * N)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    int shipWithinDays(vector<int>& weights, int days) {\n        int low = *max_element(weights.begin(), weights.end());\n        int high = accumulate(weights.begin(), weights.end(), 0);\n\n        for (int cap = low; cap <= high; cap++) {\n            int neededDays = 1, currentLoad = 0;\n            for (int w : weights) {\n                if (currentLoad + w > cap) { neededDays++; currentLoad = 0; }\n                currentLoad += w;\n            }\n            if (neededDays <= days) return cap;\n        }\n        return high;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Binary search capacity range [max(weights), sum(weights)] using feasibility check predicate function.",
+          "timeComp": "O(N log(sum - max))",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    int shipWithinDays(vector<int>& weights, int days) {\n        int low = *max_element(weights.begin(), weights.end());\n        int high = accumulate(weights.begin(), weights.end(), 0);\n        int ans = high;\n\n        while (low <= high) {\n            int mid = low + (high - low) / 2;\n            int neededDays = 1, currentLoad = 0;\n            for (int w : weights) {\n                if (currentLoad + w > mid) {\n                    neededDays++;\n                    currentLoad = 0;\n                }\n                currentLoad += w;\n            }\n\n            if (neededDays <= days) {\n                ans = mid;\n                high = mid - 1; // Try smaller capacity\n            } else {\n                low = mid + 1;  // Need bigger capacity\n            }\n        }\n        return ans;\n    }\n};"
+        }
       }
     ],
     "slug": "binary-search",
@@ -554,6 +882,56 @@ export const PATTERNS_DATA: Pattern[] = [
         "patternSlug": "overlapping-intervals",
         "subPatternSlug": "interval-merging-insertion",
         "patternId": "p_overlapping_intervals"
+      },
+      {
+        "id": "q_insert_interval",
+        "lcNum": "LC 57",
+        "title": "Insert Interval",
+        "slug": "insert-interval",
+        "diff": "medium",
+        "url": "https://leetcode.com/problems/insert-interval/",
+        "patternId": "p_overlapping_intervals",
+        "patternSlug": "overlapping-intervals",
+        "subPatternId": "sp_int_merge",
+        "subPatternSlug": "interval-merging-insertion",
+        "statement": "Given sorted non-overlapping intervals and a `newInterval`, insert `newInterval` and merge any overlapping intervals.",
+        "bruteForce": {
+          "explanation": "Append `newInterval` to list, re-sort all intervals in O(N log N), then merge overlapping intervals.",
+          "timeComp": "O(N log N)",
+          "spaceComp": "O(N)",
+          "cppCode": "class Solution {\npublic:\n    vector<vector<int>> insert(vector<vector<int>>& intervals, vector<int>& newInterval) {\n        intervals.push_back(newInterval);\n        sort(intervals.begin(), intervals.end());\n        vector<vector<int>> merged;\n        for (auto& interval : intervals) {\n            if (merged.empty() || merged.back()[1] < interval[0]) {\n                merged.push_back(interval);\n            } else {\n                merged.back()[1] = max(merged.back()[1], interval[1]);\n            }\n        }\n        return merged;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "3-Phase linear pass: 1) Add intervals ending before newInterval starts. 2) Merge overlapping intervals. 3) Add remaining.",
+          "timeComp": "O(N)",
+          "spaceComp": "O(N)",
+          "cppCode": "class Solution {\npublic:\n    vector<vector<int>> insert(vector<vector<int>>& intervals, vector<int>& newInterval) {\n        vector<vector<int>> res;\n        int i = 0, n = intervals.size();\n\n        // 1. Add all intervals ending before newInterval starts\n        while (i < n && intervals[i][1] < newInterval[0]) {\n            res.push_back(intervals[i++]);\n        }\n\n        // 2. Merge overlapping intervals\n        while (i < n && intervals[i][0] <= newInterval[1]) {\n            newInterval[0] = min(newInterval[0], intervals[i][0]);\n            newInterval[1] = max(newInterval[1], intervals[i][1]);\n            i++;\n        }\n        res.push_back(newInterval);\n\n        // 3. Add remaining intervals\n        while (i < n) {\n            res.push_back(intervals[i++]);\n        }\n        return res;\n    }\n};"
+        }
+      },
+      {
+        "id": "q_non_overlapping_intervals",
+        "lcNum": "LC 435",
+        "title": "Non-overlapping Intervals",
+        "slug": "non-overlapping-intervals",
+        "diff": "medium",
+        "url": "https://leetcode.com/problems/non-overlapping-intervals/",
+        "patternId": "p_overlapping_intervals",
+        "patternSlug": "overlapping-intervals",
+        "subPatternId": "sp_int_merge",
+        "subPatternSlug": "interval-merging-insertion",
+        "statement": "Given an array of intervals `intervals`, return minimum number of intervals to remove to make remaining intervals non-overlapping.",
+        "bruteForce": {
+          "explanation": "Recursively evaluate all sub-combinations of non-overlapping intervals in O(2^N).",
+          "timeComp": "O(2^N)",
+          "spaceComp": "O(N)",
+          "cppCode": "// Recursive subset evaluation"
+        },
+        "optimal": {
+          "explanation": "Greedy Interval Scheduling: Sort by end time. Always keep interval that finishes earliest to leave room for future intervals.",
+          "timeComp": "O(N log N)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    int eraseOverlapIntervals(vector<vector<int>>& intervals) {\n        if (intervals.empty()) return 0;\n        sort(intervals.begin(), intervals.end(), [](const vector<int>& a, const vector<int>& b) {\n            return a[1] < b[1]; // Sort by end time\n        });\n\n        int count = 0;\n        int prevEnd = intervals[0][1];\n\n        for (int i = 1; i < intervals.size(); i++) {\n            if (intervals[i][0] < prevEnd) {\n                count++; // Overlap detected, remove current interval\n            } else {\n                prevEnd = intervals[i][1];\n            }\n        }\n        return count;\n    }\n};"
+        }
       }
     ],
     "slug": "overlapping-intervals",
@@ -622,6 +1000,56 @@ export const PATTERNS_DATA: Pattern[] = [
         "patternSlug": "fast-slow-pointers-linked-list",
         "subPatternSlug": "cycle-detection-midpoint",
         "patternId": "p_fast_slow_pointers_linked_list"
+      },
+      {
+        "id": "q_linked_list_cycle_ii",
+        "lcNum": "LC 142",
+        "title": "Linked List Cycle II",
+        "slug": "linked-list-cycle-ii",
+        "diff": "medium",
+        "url": "https://leetcode.com/problems/linked-list-cycle-ii/",
+        "patternId": "p_fast_slow_pointers_linked_list",
+        "patternSlug": "fast-slow-pointers-linked-list",
+        "subPatternId": "sp_ll_cycle",
+        "subPatternSlug": "cycle-detection-midpoint",
+        "statement": "Given head of a linked list, return node where cycle begins. If no cycle exists, return `null`.",
+        "bruteForce": {
+          "explanation": "Store visited node pointers in unordered_set. First repeated node is cycle entry point.",
+          "timeComp": "O(N)",
+          "spaceComp": "O(N)",
+          "cppCode": "class Solution {\npublic:\n    ListNode *detectCycle(ListNode *head) {\n        unordered_set<ListNode*> visited;\n        ListNode *curr = head;\n        while (curr) {\n            if (visited.count(curr)) return curr;\n            visited.insert(curr);\n            curr = curr->next;\n        }\n        return nullptr;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "Floyd's Cycle Finding: Detect collision via fast/slow. Reset entry pointer to head; move entry & slow 1 step at a time.",
+          "timeComp": "O(N)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    ListNode *detectCycle(ListNode *head) {\n        if (!head || !head->next) return nullptr;\n        ListNode *slow = head, *fast = head;\n\n        while (fast && fast->next) {\n            slow = slow->next;\n            fast = fast->next->next;\n            if (slow == fast) {\n                ListNode *entry = head;\n                while (entry != slow) {\n                    entry = entry->next;\n                    slow = slow->next;\n                }\n                return entry;\n            }\n        }\n        return nullptr;\n    }\n};"
+        }
+      },
+      {
+        "id": "q_reorder_list",
+        "lcNum": "LC 143",
+        "title": "Reorder List",
+        "slug": "reorder-list",
+        "diff": "medium",
+        "url": "https://leetcode.com/problems/reorder-list/",
+        "patternId": "p_fast_slow_pointers_linked_list",
+        "patternSlug": "fast-slow-pointers-linked-list",
+        "subPatternId": "sp_ll_cycle",
+        "subPatternSlug": "cycle-detection-midpoint",
+        "statement": "Reorder list to `L0 -> Ln -> L1 -> Ln-1 -> L2 -> Ln-2...` in-place without modifying node values.",
+        "bruteForce": {
+          "explanation": "Store node pointers in vector, then construct reordered links using two pointers on vector.",
+          "timeComp": "O(N)",
+          "spaceComp": "O(N)",
+          "cppCode": "class Solution {\npublic:\n    void reorderList(ListNode* head) {\n        if (!head) return;\n        vector<ListNode*> nodes;\n        ListNode* curr = head;\n        while (curr) { nodes.push_back(curr); curr = curr->next; }\n        int l = 0, r = nodes.size() - 1;\n        while (l < r) {\n            nodes[l]->next = nodes[r];\n            l++;\n            if (l == r) break;\n            nodes[r]->next = nodes[l];\n            r--;\n        }\n        nodes[l]->next = nullptr;\n    }\n};"
+        },
+        "optimal": {
+          "explanation": "3 Steps: 1) Find middle via fast/slow pointers. 2) Reverse second half. 3) Merge two halves alternately.",
+          "timeComp": "O(N)",
+          "spaceComp": "O(1)",
+          "cppCode": "class Solution {\npublic:\n    void reorderList(ListNode* head) {\n        if (!head || !head->next) return;\n\n        // 1. Find Midpoint\n        ListNode *slow = head, *fast = head;\n        while (fast->next && fast->next->next) {\n            slow = slow->next;\n            fast = fast->next->next;\n        }\n\n        // 2. Reverse Second Half\n        ListNode *prev = nullptr, *curr = slow->next, *next = nullptr;\n        slow->next = nullptr; // Split lists\n        while (curr) {\n            next = curr->next;\n            curr->next = prev;\n            prev = curr;\n            curr = next;\n        }\n\n        // 3. Merge Alternate Nodes\n        ListNode *p1 = head, *p2 = prev;\n        while (p2) {\n            ListNode *t1 = p1->next, *t2 = p2->next;\n            p1->next = p2;\n            p2->next = t1;\n            p1 = t1;\n            p2 = t2;\n        }\n    }\n};"
+        }
       }
     ],
     "slug": "fast-slow-pointers-linked-list",
