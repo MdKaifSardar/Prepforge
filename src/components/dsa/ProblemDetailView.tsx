@@ -110,36 +110,36 @@ export function ProblemDetailView({
 
       {/* Solution Section */}
       <div className="mb-8">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-base font-bold text-zinc-900 dark:text-white sm:text-lg">
             C++ Solutions & Approaches
           </h2>
           <ApproachTabs activeApproach={activeApproach} onSelect={setActiveApproach} />
         </div>
 
         {/* Complexity & Explanation Banner */}
-        <div className={`mb-6 overflow-hidden rounded-2xl border p-5 transition-all ${
+        <div className={`mb-6 overflow-hidden rounded-2xl border p-4 sm:p-5 transition-all ${
           isOptimal
             ? 'border-indigo-200 bg-indigo-50/50 dark:border-indigo-900/40 dark:bg-indigo-950/30'
             : 'border-amber-200 bg-amber-50/50 dark:border-amber-900/40 dark:bg-amber-950/30'
         }`}>
-          <div className="mb-3 flex items-center justify-between">
+          <div className="mb-3 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
               {isOptimal ? (
-                <Sparkles className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                <Sparkles className="h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400 sm:h-5 sm:w-5" />
               ) : (
-                <Flame className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                <Flame className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400 sm:h-5 sm:w-5" />
               )}
-              <span className="font-bold text-sm text-zinc-900 dark:text-white">
+              <span className="font-bold text-xs sm:text-sm text-zinc-900 dark:text-white">
                 {isOptimal ? 'Optimal Approach' : 'Brute Force Approach'}
               </span>
             </div>
 
-            <div className="flex items-center gap-4 text-xs font-semibold">
-              <span className="rounded-lg bg-white/80 px-2.5 py-1 text-zinc-700 shadow-sm dark:bg-zinc-900 dark:text-zinc-300">
+            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold sm:gap-3">
+              <span className="rounded-lg bg-white/80 px-2.5 py-1 text-zinc-700 shadow-sm whitespace-nowrap dark:bg-zinc-900 dark:text-zinc-300">
                 Time: <strong className="text-indigo-600 dark:text-indigo-400">{currentSolution.timeComp}</strong>
               </span>
-              <span className="rounded-lg bg-white/80 px-2.5 py-1 text-zinc-700 shadow-sm dark:bg-zinc-900 dark:text-zinc-300">
+              <span className="rounded-lg bg-white/80 px-2.5 py-1 text-zinc-700 shadow-sm whitespace-nowrap dark:bg-zinc-900 dark:text-zinc-300">
                 Space: <strong className="text-indigo-600 dark:text-indigo-400">{currentSolution.spaceComp}</strong>
               </span>
             </div>

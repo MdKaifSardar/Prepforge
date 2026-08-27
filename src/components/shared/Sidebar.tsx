@@ -38,11 +38,11 @@ export function Sidebar({ patterns, isOpen = true, onToggle, onClose }: SidebarP
       {!isOpen && (
         <button
           onClick={onToggle}
-          className="fixed left-0 top-20 z-40 flex h-10 w-9 items-center justify-center rounded-r-xl border border-l-0 border-zinc-200 bg-white/90 shadow-lg backdrop-blur-md hover:bg-indigo-50 hover:w-11 dark:border-zinc-800 dark:bg-zinc-900/90 dark:hover:bg-indigo-950/50 transition-all text-zinc-700 dark:text-zinc-300 group"
+          className="fixed left-0 top-20 z-40 flex h-8 w-7 items-center justify-center rounded-r-lg border border-l-0 border-zinc-200 bg-white/90 shadow-md backdrop-blur-md transition-all hover:bg-indigo-50 sm:h-10 sm:w-9 sm:rounded-r-xl dark:border-zinc-800 dark:bg-zinc-900/90 dark:hover:bg-indigo-950/50 text-zinc-700 dark:text-zinc-300 group"
           title="Expand Patterns Menu"
           aria-label="Expand Patterns Menu"
         >
-          <ChevronRight className="h-5 w-5 text-indigo-600 dark:text-indigo-400 group-hover:translate-x-0.5 transition-transform" />
+          <ChevronRight className="h-4 w-4 text-indigo-600 dark:text-indigo-400 group-hover:translate-x-0.5 transition-transform sm:h-5 sm:w-5" />
         </button>
       )}
 
