@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Copy, Check, Terminal } from 'lucide-react';
+import { Highlight, themes } from 'prism-react-renderer';
 
 interface CodeBoxProps {
   code: string;
@@ -9,10 +10,8 @@ interface CodeBoxProps {
   language?: string;
 }
 
-export function CodeBox({ code, filename = 'solution.cpp', language = 'C++' }: CodeBoxProps) {
+export function CodeBox({ code, filename = 'solution.cpp', language = 'cpp' }: CodeBoxProps) {
   const [copied, setCopied] = useState(false);
-
-  const lines = code.trim().split('\n');
 
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
@@ -20,10 +19,12 @@ export function CodeBox({ code, filename = 'solution.cpp', language = 'C++' }: C
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const normLanguage = language.toLowerCase() === 'c++' ? 'cpp' : language.toLowerCase();
+
   return (
     <div className="my-4 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-950 font-mono text-xs text-zinc-200 dark:border-zinc-800 dark:bg-zinc-950 shadow-lg">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-zinc-800 bg-zinc-900/80 px-4 py-2">
+      <div className="flex items-center justify-between border-b border-zinc-800 bg-zinc-900/80 px-4 py-2 select-none">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-full bg-red-500/80" />
@@ -54,17 +55,29 @@ export function CodeBox({ code, filename = 'solution.cpp', language = 'C++' }: C
         </button>
       </div>
 
-      {/* Code Body */}
-      <div className="overflow-x-auto p-4 leading-relaxed">
-        {lines.map((line, idx) => (
-          <div key={idx} className="table-row">
-            <span className="table-cell select-none pr-4 text-right text-zinc-600 dark:text-zinc-600">
-              {idx + 1}
-            </span>
-            <span className="table-cell whitespace-pre text-zinc-200">{line || ' '}</span>
+      {/* Code Body with Prism Syntax Highlighting */}
+      <Highlight theme={themes.vsDark} code={code.trim()} language={normLanguage}>
+        {({ tokens, getLineProps, getTokenProps }) => (
+          <div className="overflow-x-auto p-4 leading-relaxed">
+            {tokens.map((line, idx) => {
+              const lineProps = getLineProps({ line });
+              return (
+                <div key={idx} {...lineProps} className="table-row">
+                  <span className="table-cell select-none pr-4 text-right text-zinc-600 dark:text-zinc-600">
+                    {idx + 1}
+                  </span>
+                  <span className="table-cell whitespace-pre">
+                    {line.map((token, key) => (
+                      <span key={key} {...getTokenProps({ token })} />
+                    ))}
+                  </span>
+                </div>
+              );
+            })}
           </div>
-        ))}
-      </div>
+        )}
+      </Highlight>
     </div>
   );
 }
+
