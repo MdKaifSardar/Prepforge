@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
+import { formatAuthError } from '../utils/auth-errors';
 import { Lock, Mail, ArrowRight, AlertCircle, Loader2, ArrowLeft, Code2 } from 'lucide-react';
 
 export function LoginForm() {
@@ -27,7 +28,7 @@ export function LoginForm() {
       router.push(redirect);
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'Failed to sign in. Please check your credentials.');
+      setError(formatAuthError(err));
     } finally {
       setLoading(false);
     }
@@ -41,7 +42,7 @@ export function LoginForm() {
       router.push(redirect);
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'Google sign in failed.');
+      setError(formatAuthError(err));
     } finally {
       setLoading(false);
     }

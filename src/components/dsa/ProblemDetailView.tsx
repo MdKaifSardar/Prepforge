@@ -96,14 +96,53 @@ export function ProblemDetailView({
           </a>
         </div>
 
-        {question.statement && (
+        {/* Problem Description & Overview */}
+        {(question.detailedDescription || question.statement) && (
           <div className="mt-6 border-t border-zinc-100 pt-6 dark:border-zinc-800">
             <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
               Problem Description
             </h2>
-            <p className="text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">
-              {question.statement}
-            </p>
+            <div
+              className="prose prose-xs max-w-none text-zinc-700 leading-relaxed dark:text-zinc-300"
+              dangerouslySetInnerHTML={{
+                __html: formatMarkdownToHtml(question.detailedDescription || question.statement || '')
+              }}
+            />
+          </div>
+        )}
+
+        {/* Structured Examples Cards */}
+        {question.examples && question.examples.length > 0 && (
+          <div className="mt-6 border-t border-zinc-100 pt-6 dark:border-zinc-800">
+            <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+              Example Test Cases & Explanations
+            </h3>
+            <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
+              {question.examples.map((ex, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-2xl border border-zinc-200 bg-zinc-50/80 p-4 font-mono text-xs leading-relaxed text-zinc-800 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/80 dark:text-zinc-200"
+                >
+                  <div className="mb-1.5 flex items-center justify-between font-sans text-[11px] font-bold text-zinc-400 dark:text-zinc-500">
+                    <span>Example #{idx + 1}</span>
+                  </div>
+                  <div className="my-1.5">
+                    <span className="font-semibold text-indigo-600 dark:text-indigo-400">Input: </span>
+                    <span className="font-mono text-zinc-900 dark:text-zinc-100">{ex.input}</span>
+                  </div>
+                  <div className="my-1.5">
+                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">Output: </span>
+                    <span className="font-mono text-zinc-900 dark:text-zinc-100">{ex.output}</span>
+                  </div>
+                  {ex.explanation && (
+                    <div className="mt-2.5 border-t border-zinc-200/60 pt-2 font-sans text-[11.5px] text-zinc-600 dark:border-zinc-800/80 dark:text-zinc-400">
+                      <strong className="text-zinc-800 dark:text-zinc-300">Explanation: </strong>
+                      {ex.explanation}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

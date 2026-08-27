@@ -4,8 +4,8 @@
 ================================================================================
 
 Total Patterns: 21
-Total Sub-Patterns: 38
-Total Core Blueprint Problems: 61 (100% Unique - Zero Duplicates)
+Total Sub-Patterns: 39
+Total Core Blueprint Problems: 91 (100% Unique - Zero Duplicates)
 
 --------------------------------------------------------------------------------
 1. MATRIX SIMULATION & ARRAY TRANSFORMATIONS (p_matrix_simulation_transformations)
@@ -177,6 +177,8 @@ Sub-Pattern 8.1: Interval Merging & Insertion (sp_int_merge)
     Key Concept: 3-phase linear insertion (left, merged mid, right).
   - LC 435: Non-overlapping Intervals [MEDIUM]
     Key Concept: Greedy scheduling sorted by end time.
+  - LC 253: Meeting Rooms II [MEDIUM]
+    Key Concept: Sort by start time + Min-Heap of active room end-times.
 
 
 --------------------------------------------------------------------------------
@@ -215,6 +217,8 @@ Sub-Pattern 11.1: Top K Elements / Min-Heap Pattern (sp_heap_topk)
     Key Concept: Frequency map + Min-Heap of size K.
   - LC 295: Find Median from Data Stream [HARD]
     Key Concept: Dual Heap pattern (Max-Heap lower half, Min-Heap upper half).
+  - LC 23: Merge k Sorted Lists [HARD]
+    Key Concept: Min-Heap of size K storing current head node of each list.
 
 
 --------------------------------------------------------------------------------
@@ -227,6 +231,8 @@ Sub-Pattern 12.1: Tree Height & Depth Recursion (sp_tree_dfs_height)
     Key Concept: Post-order height calculation updating global max.
   - LC 236: Lowest Common Ancestor of a Binary Tree [MEDIUM]
     Key Concept: Bottom-up DFS node bubbling matching P and Q.
+  - LC 124: Binary Tree Maximum Path Sum [HARD]
+    Key Concept: Post-order DFS returning max branch while tracking global split path sum.
 
 
 --------------------------------------------------------------------------------
@@ -281,6 +287,8 @@ Sub-Pattern 16.1: Grid Matrix Flood Fill DFS (sp_graph_grid_dfs)
 Sub-Pattern 16.2: Multi-Source BFS (sp_graph_multisource_bfs)
   - LC 994: Rotting Oranges [MEDIUM]
     Key Concept: Pre-populate queue with all initial rotten sources; level time tick.
+  - LC 127: Word Ladder [HARD]
+    Key Concept: Unweighted shortest path BFS on mutated character state space.
 
 
 --------------------------------------------------------------------------------
