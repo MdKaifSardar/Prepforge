@@ -4,11 +4,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
+import { LogoutModal } from '@/components/shared/LogoutModal';
 import { User, LogOut, LayoutDashboard, ShieldCheck, ChevronDown, Sparkles } from 'lucide-react';
 
 export function UserAvatarMenu() {
   const { user, userProfile, logout, loading } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [imgError, setImgError] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -51,86 +54,110 @@ export function UserAvatarMenu() {
   const isAdmin = role === 'admin';
   const photoURL = userProfile?.photoURL || user.photoURL;
 
-  const handleLogout = async () => {
+  const handleOpenLogoutModal = () => {
     setIsOpen(false);
-    await logout();
-    router.push('/login');
+    setShowLogoutModal(true);
+  };
+
+  const handleConfirmLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      router.refresh();
+      window.location.href = '/login';
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      setIsLoggingOut(false);
+      setShowLogoutModal(false);
+    }
   };
 
   return (
-    <div className="relative" ref={menuRef}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 rounded-full border border-zinc-200 bg-white p-1 pr-2.5 transition-all hover:border-indigo-500/50 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900"
-      >
-        {photoURL && !imgError ? (
-          <img
-            src={photoURL}
-            alt={displayName}
-            referrerPolicy="no-referrer"
-            onError={() => setImgError(true)}
-            className="h-7 w-7 rounded-full object-cover"
-          />
-        ) : (
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-[11px] font-bold text-white">
-            {displayName.charAt(0).toUpperCase()}
-          </div>
-        )}
+    <>
+      <div className="relative" ref={menuRef}>
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex items-center gap-2 rounded-full border border-zinc-200 bg-white p-1 pr-2.5 transition-all hover:border-indigo-500/50 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900"
+        >
+          {photoURL && !imgError ? (
+            <img
+              src={photoURL}
+              alt={displayName}
+              referrerPolicy="no-referrer"
+              onError={() => setImgError(true)}
+              className="h-7 w-7 rounded-full object-cover"
+            />
+          ) : (
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-[11px] font-bold text-white">
+              {displayName.charAt(0).toUpperCase()}
+            </div>
+          )}
 
-        <span className="hidden max-w-[100px] truncate text-xs font-bold text-zinc-800 dark:text-zinc-200 sm:inline-block">
-          {displayName}
-        </span>
-
-        {isAdmin && (
-          <span className="rounded-full bg-purple-100 px-1.5 py-0.5 text-[9px] font-extrabold text-purple-600 dark:bg-purple-950/80 dark:text-purple-400">
-            ADMIN
+          <span className="hidden max-w-[100px] truncate text-xs font-bold text-zinc-800 dark:text-zinc-200 sm:inline-block">
+            {displayName}
           </span>
-        )}
 
-        <ChevronDown className="h-3.5 w-3.5 text-zinc-400" />
-      </button>
+          {isAdmin && (
+            <span className="rounded-full bg-purple-100 px-1.5 py-0.5 text-[9px] font-extrabold text-purple-600 dark:bg-purple-950/80 dark:text-purple-400">
+              ADMIN
+            </span>
+          )}
 
-      {/* Dropdown Menu */}
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-2xl border border-zinc-200 bg-white p-1.5 shadow-2xl backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-900 z-50">
-          <div className="border-b border-zinc-100 px-3 py-2.5 dark:border-zinc-800">
-            <p className="truncate text-xs font-bold text-zinc-900 dark:text-white">{displayName}</p>
-            <p className="truncate text-[11px] text-zinc-500 dark:text-zinc-400">{user.email}</p>
-          </div>
+          <ChevronDown className="h-3.5 w-3.5 text-zinc-400" />
+        </button>
 
-          <div className="py-1">
-            <Link
-              href="/dashboard"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-zinc-700 transition-colors hover:bg-indigo-50 hover:text-indigo-600 dark:text-zinc-300 dark:hover:bg-indigo-950/50 dark:hover:text-indigo-400"
-            >
-              <LayoutDashboard className="h-4 w-4" />
-              <span>Personal Dashboard</span>
-            </Link>
+        {/* Dropdown Menu */}
+        {isOpen && (
+          <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-2xl border border-zinc-200 bg-white p-1.5 shadow-2xl backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-900 z-50">
+            <div className="border-b border-zinc-100 px-3 py-2.5 dark:border-zinc-800">
+              <p className="truncate text-xs font-bold text-zinc-900 dark:text-white">{displayName}</p>
+              <p className="truncate text-[11px] text-zinc-500 dark:text-zinc-400">{user.email}</p>
+            </div>
 
-            {isAdmin && (
+            <div className="py-1">
               <Link
-                href="/admin"
+                href="/dashboard"
                 onClick={() => setIsOpen(false)}
-                className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-purple-600 transition-colors hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-950/50"
+                className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-zinc-700 transition-colors hover:bg-indigo-50 hover:text-indigo-600 dark:text-zinc-300 dark:hover:bg-indigo-950/50 dark:hover:text-indigo-400"
               >
-                <ShieldCheck className="h-4 w-4" />
-                <span>Admin Panel</span>
+                <LayoutDashboard className="h-4 w-4" />
+                <span>Personal Dashboard</span>
               </Link>
-            )}
-          </div>
 
-          <div className="border-t border-zinc-100 pt-1 dark:border-zinc-800">
-            <button
-              onClick={handleLogout}
-              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
-            >
-              <LogOut className="h-4 w-4" />
-              <span>Sign Out</span>
-            </button>
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-purple-600 transition-colors hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-950/50"
+                >
+                  <ShieldCheck className="h-4 w-4" />
+                  <span>Admin Panel</span>
+                </Link>
+              )}
+            </div>
+
+            <div className="border-t border-zinc-100 pt-1 dark:border-zinc-800">
+              <button
+                onClick={handleOpenLogoutModal}
+                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Sign Out</span>
+              </button>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+
+      {/* Confirmation Modal */}
+      <LogoutModal
+        isOpen={showLogoutModal}
+        isLoading={isLoggingOut}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={handleConfirmLogout}
+      />
+    </>
   );
 }
+

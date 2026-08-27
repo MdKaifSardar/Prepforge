@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
+import { formatAuthError } from '../utils/auth-errors';
 import { User as UserIcon, Lock, Mail, ArrowRight, AlertCircle, Loader2, ArrowLeft, Code2 } from 'lucide-react';
 
 export function SignupForm() {
@@ -28,7 +29,7 @@ export function SignupForm() {
       router.push(redirect);
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'Failed to create account.');
+      setError(formatAuthError(err));
     } finally {
       setLoading(false);
     }
@@ -42,7 +43,7 @@ export function SignupForm() {
       router.push(redirect);
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'Google sign up failed.');
+      setError(formatAuthError(err));
     } finally {
       setLoading(false);
     }

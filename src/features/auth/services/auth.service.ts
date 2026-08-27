@@ -18,28 +18,43 @@ export class AuthService {
    * Sync or create user profile document in Firestore (/users/{uid})
    */
   static async syncUserProfile(user: User): Promise<UserProfile> {
-    const userRef = doc(db, 'users', user.uid);
-    const snap = await getDoc(userRef);
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      const snap = await getDoc(userRef);
 
-    if (snap.exists()) {
-      return snap.data() as UserProfile;
+      if (snap.exists()) {
+        return snap.data() as UserProfile;
+      }
+
+      const providerId = user.providerData[0]?.providerId || 'password';
+      const newProfile: UserProfile = {
+        uid: user.uid,
+        email: user.email || '',
+        displayName: user.displayName || user.email?.split('@')[0] || 'Member',
+        photoURL: user.photoURL || undefined,
+        role: 'user', // Default role
+        providerId,
+        emailVerified: user.emailVerified,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      await setDoc(userRef, newProfile);
+      return newProfile;
+    } catch (err) {
+      console.warn('Firestore profile sync failed, using in-memory fallback profile:', err);
+      return {
+        uid: user.uid,
+        email: user.email || '',
+        displayName: user.displayName || user.email?.split('@')[0] || 'Member',
+        photoURL: user.photoURL || undefined,
+        role: 'user',
+        providerId: user.providerData[0]?.providerId || 'password',
+        emailVerified: user.emailVerified,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
     }
-
-    const providerId = user.providerData[0]?.providerId || 'password';
-    const newProfile: UserProfile = {
-      uid: user.uid,
-      email: user.email || '',
-      displayName: user.displayName || user.email?.split('@')[0] || 'Member',
-      photoURL: user.photoURL || undefined,
-      role: 'user', // Default role
-      providerId,
-      emailVerified: user.emailVerified,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-
-    await setDoc(userRef, newProfile);
-    return newProfile;
   }
 
   /**
@@ -53,7 +68,11 @@ export class AuthService {
     // Sync profile & create 14-day HttpOnly session cookie
     const profile = await this.syncUserProfile(result.user);
     const idToken = await result.user.getIdToken();
-    await createSessionCookieAction(idToken);
+    try {
+      await createSessionCookieAction(idToken);
+    } catch (err) {
+      console.warn('Session cookie creation deferred:', err);
+    }
 
     return { user: result.user, profile };
   }
@@ -67,7 +86,11 @@ export class AuthService {
     const profile = await this.syncUserProfile(credential.user);
     
     const idToken = await credential.user.getIdToken();
-    await createSessionCookieAction(idToken);
+    try {
+      await createSessionCookieAction(idToken);
+    } catch (err) {
+      console.warn('Session cookie creation deferred:', err);
+    }
 
     return { user: credential.user, profile };
   }
@@ -85,7 +108,11 @@ export class AuthService {
 
     const profile = await this.syncUserProfile(credential.user);
     const idToken = await credential.user.getIdToken();
-    await createSessionCookieAction(idToken);
+    try {
+      await createSessionCookieAction(idToken);
+    } catch (err) {
+      console.warn('Session cookie creation deferred:', err);
+    }
 
     return { user: credential.user, profile };
   }
@@ -101,7 +128,12 @@ export class AuthService {
    * Logout User & clear session cookie
    */
   static async logout(): Promise<void> {
-    await removeSessionCookieAction();
+    try {
+      await removeSessionCookieAction();
+    } catch (err) {
+      console.warn('Server session cookie removal warning:', err);
+    }
     await signOut(auth);
   }
 }
+

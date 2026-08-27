@@ -31,22 +31,26 @@ const db = getFirestore(app);
 
 async function wipeCollection(collName: string) {
   const snap = await getDocs(collection(db, collName));
-  for (const d of snap.docs) {
-    await deleteDoc(doc(db, collName, d.id));
-  }
+  console.log(`Wiping ${snap.size} old documents from "${collName}"...`);
+  const deletePromises = snap.docs.map(d => deleteDoc(doc(db, collName, d.id)));
+  await Promise.all(deletePromises);
 }
 
 async function seed() {
-  console.log(`Starting Clean Firestore seeding into project: ${firebaseConfig.projectId}...`);
+  console.log(`Starting Fast Clean Firestore seeding into project: ${firebaseConfig.projectId}...`);
   
-  // Wipe old stale documents first
-  await wipeCollection('patterns');
-  await wipeCollection('sub_patterns');
-  await wipeCollection('questions');
+  // Wipe old stale documents first in parallel
+  await Promise.all([
+    wipeCollection('patterns'),
+    wipeCollection('sub_patterns'),
+    wipeCollection('questions')
+  ]);
 
   let totalPatterns = 0;
   let totalSubPatterns = 0;
   let totalQuestions = 0;
+
+  const uploadPromises: Promise<any>[] = [];
 
   for (const pattern of PATTERNS_DATA) {
     const questionCount = pattern.questions ? pattern.questions.length : 0;
@@ -56,12 +60,12 @@ async function seed() {
     if (pattern.subPatterns && pattern.subPatterns.length > 0) {
       for (const sub of pattern.subPatterns) {
         const subDocRef = doc(db, 'sub_patterns', String(sub.id));
-        await setDoc(subDocRef, {
+        uploadPromises.push(setDoc(subDocRef, {
           ...sub,
           patternId: patternDocId,
           patternSlug: pattern.slug,
           domainId: 'dsa'
-        });
+        }));
         totalSubPatterns++;
       }
     }
@@ -71,32 +75,31 @@ async function seed() {
       for (const q of pattern.questions) {
         const qDocId = String(q.id);
         const qDocRef = doc(db, 'questions', qDocId);
-        await setDoc(qDocRef, {
+        uploadPromises.push(setDoc(qDocRef, {
           ...q,
           id: qDocId,
           patternId: patternDocId,
           patternSlug: pattern.slug,
           domainId: 'dsa'
-        });
+        }));
         totalQuestions++;
       }
     }
 
-    // 3. Upload Pattern (Lightweight document without giant embedded questions array)
+    // 3. Upload Pattern Metadata
     const { questions, ...patternMeta } = pattern;
-    const patternDocRef = doc(db, 'patternDocId', patternDocId);
-    await setDoc(doc(db, 'patterns', patternDocId), {
+    uploadPromises.push(setDoc(doc(db, 'patterns', patternDocId), {
       ...patternMeta,
       id: patternDocId,
       domainId: 'dsa',
       questionCount
-    });
+    }));
     totalPatterns++;
-
-    console.log(`Uploaded Pattern [${patternDocId}]: ${pattern.name} (${pattern.subPatterns?.length || 0} sub-patterns, ${questionCount} questions)`);
   }
 
-  console.log(`SUCCESS: Seeded ${totalPatterns} patterns, ${totalSubPatterns} sub-patterns, and ${totalQuestions} questions into Firestore!`);
+  await Promise.all(uploadPromises);
+
+  console.log(`\n🎉 SUCCESS: Cleaned and Seeded ${totalPatterns} patterns, ${totalSubPatterns} sub-patterns, and ${totalQuestions} questions into Firestore!`);
   process.exit(0);
 }
 

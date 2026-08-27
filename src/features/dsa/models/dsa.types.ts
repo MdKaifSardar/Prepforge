@@ -10,6 +10,12 @@ export interface CodeSolution {
 export type BruteForce = CodeSolution;
 export type Optimal = CodeSolution;
 
+export interface ProblemExample {
+  input: string;
+  output: string;
+  explanation?: string;
+}
+
 export interface DsaQuestion extends Partial<Omit<BaseQuestion, 'domainId'>> {
   id: string;               // Immutable ID (e.g. "q_two_sum")
   slug: string;             // SEO slug (e.g. "two-sum")
@@ -21,7 +27,9 @@ export interface DsaQuestion extends Partial<Omit<BaseQuestion, 'domainId'>> {
   diff: 'easy' | 'medium' | 'hard';
   patternId: string | number;
   subPatternId?: string;
-  statement?: string;
+  statement?: string;           // Legacy / Fallback
+  detailedDescription?: string; // Rich problem overview & constraints
+  examples?: ProblemExample[];  // Structured Input/Output example sets
   bruteForce: BruteForce;
   optimal: Optimal;
 }

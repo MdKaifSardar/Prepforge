@@ -96,50 +96,89 @@ export function ProblemDetailView({
           </a>
         </div>
 
-        {question.statement && (
+        {/* Problem Description & Overview */}
+        {(question.detailedDescription || question.statement) && (
           <div className="mt-6 border-t border-zinc-100 pt-6 dark:border-zinc-800">
             <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
               Problem Description
             </h2>
-            <p className="text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">
-              {question.statement}
-            </p>
+            <div
+              className="prose prose-xs max-w-none text-zinc-700 leading-relaxed dark:text-zinc-300"
+              dangerouslySetInnerHTML={{
+                __html: formatMarkdownToHtml(question.detailedDescription || question.statement || '')
+              }}
+            />
+          </div>
+        )}
+
+        {/* Structured Examples Cards */}
+        {question.examples && question.examples.length > 0 && (
+          <div className="mt-6 border-t border-zinc-100 pt-6 dark:border-zinc-800">
+            <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+              Example Test Cases & Explanations
+            </h3>
+            <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
+              {question.examples.map((ex, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-2xl border border-zinc-200 bg-zinc-50/80 p-4 font-mono text-xs leading-relaxed text-zinc-800 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/80 dark:text-zinc-200"
+                >
+                  <div className="mb-1.5 flex items-center justify-between font-sans text-[11px] font-bold text-zinc-400 dark:text-zinc-500">
+                    <span>Example #{idx + 1}</span>
+                  </div>
+                  <div className="my-1.5">
+                    <span className="font-semibold text-indigo-600 dark:text-indigo-400">Input: </span>
+                    <span className="font-mono text-zinc-900 dark:text-zinc-100">{ex.input}</span>
+                  </div>
+                  <div className="my-1.5">
+                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">Output: </span>
+                    <span className="font-mono text-zinc-900 dark:text-zinc-100">{ex.output}</span>
+                  </div>
+                  {ex.explanation && (
+                    <div className="mt-2.5 border-t border-zinc-200/60 pt-2 font-sans text-[11.5px] text-zinc-600 dark:border-zinc-800/80 dark:text-zinc-400">
+                      <strong className="text-zinc-800 dark:text-zinc-300">Explanation: </strong>
+                      {ex.explanation}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
 
       {/* Solution Section */}
       <div className="mb-8">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-base font-bold text-zinc-900 dark:text-white sm:text-lg">
             C++ Solutions & Approaches
           </h2>
           <ApproachTabs activeApproach={activeApproach} onSelect={setActiveApproach} />
         </div>
 
         {/* Complexity & Explanation Banner */}
-        <div className={`mb-6 overflow-hidden rounded-2xl border p-5 transition-all ${
+        <div className={`mb-6 overflow-hidden rounded-2xl border p-4 sm:p-5 transition-all ${
           isOptimal
             ? 'border-indigo-200 bg-indigo-50/50 dark:border-indigo-900/40 dark:bg-indigo-950/30'
             : 'border-amber-200 bg-amber-50/50 dark:border-amber-900/40 dark:bg-amber-950/30'
         }`}>
-          <div className="mb-3 flex items-center justify-between">
+          <div className="mb-3 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
               {isOptimal ? (
-                <Sparkles className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                <Sparkles className="h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400 sm:h-5 sm:w-5" />
               ) : (
-                <Flame className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                <Flame className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400 sm:h-5 sm:w-5" />
               )}
-              <span className="font-bold text-sm text-zinc-900 dark:text-white">
+              <span className="font-bold text-xs sm:text-sm text-zinc-900 dark:text-white">
                 {isOptimal ? 'Optimal Approach' : 'Brute Force Approach'}
               </span>
             </div>
 
-            <div className="flex items-center gap-4 text-xs font-semibold">
-              <span className="rounded-lg bg-white/80 px-2.5 py-1 text-zinc-700 shadow-sm dark:bg-zinc-900 dark:text-zinc-300">
+            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold sm:gap-3">
+              <span className="rounded-lg bg-white/80 px-2.5 py-1 text-zinc-700 shadow-sm whitespace-nowrap dark:bg-zinc-900 dark:text-zinc-300">
                 Time: <strong className="text-indigo-600 dark:text-indigo-400">{currentSolution.timeComp}</strong>
               </span>
-              <span className="rounded-lg bg-white/80 px-2.5 py-1 text-zinc-700 shadow-sm dark:bg-zinc-900 dark:text-zinc-300">
+              <span className="rounded-lg bg-white/80 px-2.5 py-1 text-zinc-700 shadow-sm whitespace-nowrap dark:bg-zinc-900 dark:text-zinc-300">
                 Space: <strong className="text-indigo-600 dark:text-indigo-400">{currentSolution.spaceComp}</strong>
               </span>
             </div>
